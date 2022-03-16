@@ -63,6 +63,8 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
     private RewardedAd mRewardedAd;
     private InterstitialAd mInterstitialAd;
+    private String rewardedBlockId;
+    private String interstitialBlockId;
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -147,15 +149,13 @@ public class YandexAdsPlugin extends CordovaPlugin {
     private void initAction(JSONArray args, final CallbackContext callbackContext) throws JSONException {
 
         final YandexAdsPlugin self = this;
-        final String rewardedBlockId = args.getString(0);
-        final String interstitialBlockId = args.getString(1);
+        rewardedBlockId = args.getString(0);
+        interstitialBlockId = args.getString(1);
 
         MobileAds.initialize(this.cordova.getActivity(), new InitializationListener() {
             @Override
             public void onInitializationCompleted() {
                 callbackContext.success();
-                self.initRewarded(rewardedBlockId);
-                self.initInterstitial(interstitialBlockId);
             }
         });
     }
@@ -268,9 +268,11 @@ public class YandexAdsPlugin extends CordovaPlugin {
     /** ----------------------- REWARDED VIDEO --------------------------- */
 
     private void loadRewardedAction(JSONArray args, final CallbackContext callbackContext) {
+        final YandexAdsPlugin self = this;
         final AdRequest adRequest = new AdRequest.Builder().build();
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
+                self.initRewarded(rewardedBlockId);
                 mRewardedAd.loadAd(adRequest);
                 callbackContext.success();
             }
@@ -289,9 +291,11 @@ public class YandexAdsPlugin extends CordovaPlugin {
     /** ----------------------- INTERSTITIAL --------------------------- */
 
     private void loadInterstitialAction(JSONArray args, final CallbackContext callbackContext) {
+        final YandexAdsPlugin self = this;
         final AdRequest adRequest = new AdRequest.Builder().build();
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
+                self.initInterstitial(interstitialBlockId);
                 mInterstitialAd.loadAd(adRequest);
                 callbackContext.success();
             }
