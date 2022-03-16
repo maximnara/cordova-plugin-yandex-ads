@@ -7,7 +7,7 @@
 - [State of Development](#state-of-development)
 - [Install](#install)
 - [Usage](#usage)
-- [Official IronSource Documentation](https://yandex.ru/dev/mobile-ads/doc/intro/about.html)
+- [Official Yandex Documentation](https://yandex.ru/dev/mobile-ads/doc/intro/about.html)
 
 
 ## State of Development
