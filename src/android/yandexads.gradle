@@ -1,0 +1,14 @@
+cdvPluginPostBuildExtras.add({
+    android {
+      compileOptions {
+          sourceCompatibility JavaVersion.VERSION_1_8
+          targetCompatibility JavaVersion.VERSION_1_8
+      }
+    }
+
+    dependencies {
+        implementation fileTree(dir: 'libs', include: ['*.jar'])
+        implementation 'com.yandex.android:mobileads:4.5.0'
+        implementation 'com.yandex.android:mobmetricalib:4.0.0'
+    }
+});

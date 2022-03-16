@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin
+        id="cordova-plugin-yandex-ads"
+        version="0.0.1"
+        xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+>
+    <name>cordova-plugin-yandex-ads</name>
+    <description>Cordova plugin for Yandex Ads</description>
+    <js-module src="www/yandexads.js" name="YandexAds">
+        <clobbers target="YandexAds" />
+    </js-module>
+
+    <engines>
+        <engine name="cordova" version=">=3.0" />
+        <engine name="cordova-android" version=">=4.0.0" />
+        <engine name="cordova-ios" version=">=4.0.0" />
+    </engines>
+
+    <platform name="android">
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="YandexAdsPlugin">
+                <param name="android-package" value="io.luzh.cordova.plugin.YandexAdsPlugin" />
+            </feature>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        </config-file>
+
+        <source-file src="src/android/YandexAdsPlugin.java"
+            target-dir="src/io/luzh/cordova/plugin" />
+        <framework src="src/android/yandexads.gradle" custom="true" type="gradleReference" />
+        
+        <framework src="com.android.support:support-v4:+" />
+        <framework src="com.android.support:recyclerview-v7:27.1.1" />
+        
+    </platform>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="YandexAdsPlugin">
+                <param name="ios-package" value="YandexAdsPlugin" />
+            </feature>
+        </config-file>
+        <header-file src="src/ios/YandexAdsPlugin.h" />
+        <source-file src="src/ios/YandexAdsPlugin.m" />
+
+        <framework src="YandexMobileAds" type="podspec" spec="~> 4.4.2" />
+
+        <framework src="YandexMobileAds.framework" />
+        <framework src="YandexMobileMetrica.framework" />
+
+        <framework src="Foundation.framework" />
+    </platform>
+</plugin>

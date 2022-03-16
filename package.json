@@ -1,0 +1,21 @@
+{
+  "name": "cordova-plugin-yandex-ads",
+  "version": "0.0.1",
+  "description": "Yandex ads for cordova based development",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charlesbodman/cordova-plugin-ironsource-ads.git"
+  },
+  "keywords": [
+    "cordova",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "author": "Maksim Luzhkov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/charlesbodman/cordova-plugin-ironsource-ads/issues"
+  },
+  "homepage": "https://github.com/charlesbodman/cordova-plugin-ironsource-ads"
+}
