@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.yandex.mobile.ads.common.ImpressionData;
 import com.yandex.mobile.ads.common.InitializationListener;
 import com.yandex.mobile.ads.common.MobileAds;
 import com.yandex.mobile.ads.common.AdRequest;
@@ -32,6 +33,8 @@ import com.yandex.mobile.ads.interstitial.InterstitialAd;
 import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener;
 
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 public class YandexAdsPlugin extends CordovaPlugin {
 
@@ -169,7 +172,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
         final YandexAdsPlugin self = this;
         mRewardedAd = new RewardedAd(this.cordova.getActivity());
-        mRewardedAd.setBlockId(blockId);
+        mRewardedAd.setAdUnitId(blockId);
 
         mRewardedAd.setRewardedAdEventListener(new RewardedAdEventListener() {
             @Override
@@ -203,6 +206,16 @@ public class YandexAdsPlugin extends CordovaPlugin {
             }
 
             @Override
+            public void onAdClicked() {
+
+            }
+
+            @Override
+            public void onImpression(@Nullable ImpressionData var1) {
+
+            }
+
+            @Override
             public void onLeftApplication() {
 
             }
@@ -218,7 +231,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
         final YandexAdsPlugin self = this;
         mInterstitialAd = new InterstitialAd(this.cordova.getActivity());
-        mInterstitialAd.setBlockId(blockId);
+        mInterstitialAd.setAdUnitId(blockId);
 
         mInterstitialAd.setInterstitialAdEventListener(new InterstitialAdEventListener() {
             @Override
@@ -243,6 +256,16 @@ public class YandexAdsPlugin extends CordovaPlugin {
             public void onAdDismissed() {
                 Log.d(TAG, EVENT_INTERSTITIAL_CLOSED);
                 self.emitWindowEvent(EVENT_INTERSTITIAL_CLOSED);
+            }
+
+            @Override
+            public void onAdClicked() {
+
+            }
+
+            @Override
+            public void onImpression(@Nullable ImpressionData var1) {
+
             }
 
             @Override

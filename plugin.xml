@@ -34,16 +34,18 @@
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+                       android:value="@integer/google_play_services_version" />
+
+            <activity android:name="com.my.target.common.MyTargetActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
         </config-file>
 
         <source-file src="src/android/YandexAdsPlugin.java"
-            target-dir="src/io/luzh/cordova/plugin" />
+                     target-dir="src/io/luzh/cordova/plugin" />
         <framework src="src/android/yandexads.gradle" custom="true" type="gradleReference" />
-        
+
         <framework src="com.android.support:support-v4:+" />
         <framework src="com.android.support:recyclerview-v7:27.1.1" />
-        
+
     </platform>
 
     <platform name="ios">
@@ -55,11 +57,23 @@
         <header-file src="src/ios/YandexAdsPlugin.h" />
         <source-file src="src/ios/YandexAdsPlugin.m" />
 
-        <framework src="YandexMobileAds" type="podspec" spec="~> 4.4.2" />
+        <framework src="YandexMobileAds" type="podspec" spec="~> 5.0.0-alpha.2" />
+
+        <framework src="MyTargetYandexMobileAdsAdapters" type="podspec" spec="~> 5.14.4.0" />
+        <framework src="myTargetSDK" type="podspec" spec="~> 5.14.4" />
 
         <framework src="YandexMobileAds.framework" />
         <framework src="YandexMobileMetrica.framework" />
+        <framework src="MyTargetSDK.framework" />
 
         <framework src="Foundation.framework" />
+        <framework src="CoreLocation.framework" />
+        <framework src="CoreTelephony.framework" />
+        <framework src="CoreMedia.framework" />
+        <framework src="SystemConfiguration.framework" />
+        <framework src="StoreKit.framework" />
+        <framework src="AdSupport.framework" />
+        <framework src="SafariServices.framework" />
+        <framework src="AVFoundation.framework" />
     </platform>
 </plugin>

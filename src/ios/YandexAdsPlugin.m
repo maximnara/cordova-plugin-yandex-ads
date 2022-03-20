@@ -89,7 +89,7 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
  */
 - (void)loadRewardedVideo:(CDVInvokedUrlCommand *)command
 {
-    self.rewardedAd = [[YMARewardedAd alloc] initWithBlockID:self.rewardedBlockId];
+    self.rewardedAd = [[YMARewardedAd alloc] initWithAdUnitID:self.rewardedBlockId];
     self.rewardedAd.delegate = self;
 
     [self.rewardedAd load];
@@ -196,7 +196,7 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
 
 - (void)loadInterstitial:(CDVInvokedUrlCommand *)command
 {
-    self.interstitialAd = [[YMAInterstitialAd alloc] initWithBlockID:self.interstitialBlockId];
+    self.interstitialAd = [[YMAInterstitialAd alloc] initWithAdUnitID:self.interstitialBlockId];
     self.interstitialAd.delegate = self;
 
     [self.interstitialAd load];
