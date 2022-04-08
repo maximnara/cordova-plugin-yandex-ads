@@ -455,7 +455,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
                         @Override
                         public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
                             Log.d(TAG, EVENT_BANNER_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
-                            self.emitWindowEvent(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
+                            self.emitWindowEvent(EVENT_BANNER_FAILED_TO_LOAD);
                         }
 
                         @Override
