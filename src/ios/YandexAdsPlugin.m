@@ -29,10 +29,37 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
  */
 - (void)init:(CDVInvokedUrlCommand *)command
 {
-    NSLog(@"%s", "TEST");
-
     self.rewardedBlockId = [command argumentAtIndex:0];
     self.interstitialBlockId = [command argumentAtIndex:1];
+    self.bannerBlockId = [command argumentAtIndex:2];
+
+    self.bannerAtTop = false;
+    self.bannerOverlap = false;
+
+    NSArray *bannerSizes = @[
+        @{
+            @"BANNER_320x50": [NSValue valueWithCGSize:(CGSize){320, 50}],
+            @"BANNER_320x100": [NSValue valueWithCGSize:(CGSize){320, 100}],
+            @"BANNER_300x250": [NSValue valueWithCGSize:(CGSize){300, 250}],
+            @"BANNER_300x300": [NSValue valueWithCGSize:(CGSize){300, 300}],
+            @"BANNER_240x400": [NSValue valueWithCGSize:(CGSize){240, 400}],
+            @"BANNER_400x240": [NSValue valueWithCGSize:(CGSize){400, 240}],
+            @"BANNER_728x90": [NSValue valueWithCGSize:(CGSize){728, 90}],
+        }
+    ];
+    NSString* str = nil;
+    NSDictionary* options = [command argumentAtIndex:3 withDefault:[NSNull null]];
+    str = [options objectForKey:@"bannerAtTop"];
+    NSLog(@"%@", str);
+    if(str) self.bannerAtTop = [str boolValue];
+    str = [options objectForKey:@"overlap"];
+    if(str) self.bannerOverlap = [str boolValue];
+    str = [options objectForKey:@"bannerSize"];
+    if(str) {
+        self.bannerSize = [bannerSizes[0][str] CGSizeValue];
+    } else {
+        self.bannerSize = [bannerSizes[0][@"BANNER_320x50"] CGSizeValue];
+    }
 
     // Send callback successfull
     CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -63,24 +90,6 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
     NSString *js = [NSString stringWithFormat:@"cordova.fireWindowEvent('%@', %@)", event, jsonString];
     [self.commandDelegate evalJs:js];
 }
-
-//- (void)listSubviewsOfView:(UIView *)view {
-//
-//    // Get the subviews of the view
-//    NSArray *subviews = [view subviews];
-//
-//    // Return if there are no subviews
-//    if ([subviews count] == 0) return; // COUNT CHECK LINE
-//
-//    for (UIView *subview in subviews) {
-//
-//        // Do what you want to do with the subview
-//        NSLog(@"%@", subview);
-//
-//        // List the subviews of subview
-//        [self listSubviewsOfView:subview];
-//    }
-//}
 
 #pragma mark - Rewarded Video Delegate Functions
 
@@ -141,7 +150,15 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
 
 - (void)loadBanner:(CDVInvokedUrlCommand *)command
 {
-
+    NSLog(@"loadBanner");
+    NSLog(@"%@", self.bannerBlockId);
+    if (self.adView != nil) {
+        [self destroyBanner];
+    }
+    YMAAdSize *adSize = [YMAAdSize fixedSizeWithCGSize:self.bannerSize];
+    self.adView = [[YMAAdView alloc] initWithAdUnitID:self.bannerBlockId adSize:adSize];
+    self.adView.delegate = self;
+    [self.adView loadAd];
 }
 
 #pragma mark - Banner Delegate Functions
@@ -149,47 +166,59 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
 // Show banner
 - (void)showBanner:(CDVInvokedUrlCommand *)command
 {
+    if(self.adView)
+    {
+        UIView* parentView = self.bannerOverlap ? self.viewController.view : [self.viewController.view superview];
+
+        if (self.bannerAtTop) {
+            [self.adView displayAtTopInView:parentView];
+        } else {
+            [self.adView displayAtBottomInView:parentView];
+        }
+    }
+
+    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 - (void)hideBanner:(CDVInvokedUrlCommand *)command
 {
+    NSLog(@"%s", "hideBanner");
+    [self destroyBanner];
 }
 
 - (void)destroyBanner
 {
+    [self.adView setDelegate:nil];
+    [self.adView removeFromSuperview];
+    self.adView = nil;
 }
 
-// Banner dismissed screen
-- (void)bannerDidDismissScreen
-{
+- (void)adViewDidFailLoading:(YMAAdView *)bannerAdView error:(NSError *)error {
+    NSLog(@"%s", "adViewDidFailLoading");
+    NSLog(@"%@", error.description);
+    [self emitWindowEvent:EVENT_BANNER_FAILED_TO_LOAD];
 }
 
-//
-- (void)bannerDidFailToLoadWithError:(NSError *)error
-{
+- (void)adViewDidLoad:(YMAAdView *)adView {
+    NSLog(@"%s", "adViewDidLoad");
+    [self emitWindowEvent:EVENT_BANNER_DID_LOAD];
 }
 
-- (void)bannerDidLoad:bannerView
-{
+- (void)adViewDidClick:(YMAAdView *)adView {
+    NSLog(@"%s", "adViewDidClick");
+    [self emitWindowEvent:EVENT_BANNER_DID_CLICK];
 }
 
 
-- (void)bannerWillLeaveApplication
-{
+- (void)adViewWillLeaveApplication:(YMAAdView *)adView {
     NSLog(@"%s", __PRETTY_FUNCTION__);
     [self emitWindowEvent:EVENT_BANNER_WILL_LEAVE_APPLICATION];
 }
 
-- (void)bannerWillPresentScreen
-{
-    NSLog(@"%s", __PRETTY_FUNCTION__);
+- (void)adView:(YMAAdView *)adView willPresentScreen:(nullable UIViewController *)viewController {
+    NSLog(@"%s", @"willPresentScreen");
     [self emitWindowEvent:EVENT_BANNER_WILL_PRESENT_SCREEN];
-}
-
-- (void)didClickBanner
-{
-    NSLog(@"%s", __PRETTY_FUNCTION__);
-    [self emitWindowEvent:EVENT_BANNER_DID_CLICK];
 }
 
 #pragma mark - Intersitial Delegate Functions

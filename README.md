@@ -13,7 +13,7 @@
 ## State of Development
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Rewarded%20Video%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Interstitial%20Support&style=flat-square">
-- [ ] <img src="https://img.shields.io/badge/-In%20Development-yellow.svg?label=Banner%20Support&style=flat-square">
+- [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Banner%20Support&style=flat-square">
 
 -------- 
 
@@ -35,6 +35,10 @@ npm i cordova-plugin-yandex-ads --save
   - [Load Interstitial](#load-interstitial)
   - [Show Interstitial](#show-interstitial)
   - [Interstitial Events](#interstitial-events)
+- [Banners](#banners)
+  - [Load Banner](#load-banner)
+  - [Show Banner](#show-banner)
+  - [Banner Events](#banner-events)
   
   
 All methods support optional `onSuccess` and `onFailure` parameters
@@ -44,9 +48,26 @@ All methods support optional `onSuccess` and `onFailure` parameters
 ```javascript
 import * as YandexAds from 'cordova-plugin-yandex-ads/www/yandexads';
 await YandexAds.init({ 
-  rewardedBlockId: 'YOUR_BANNER_ID',
-  interstitialBlockId: 'YOUR_ID',
+  rewardedBlockId: 'YOUR_REWARDER_BLOCK_ID',
+  interstitialBlockId: 'YOUR_INTERSTITIAL_ID',
+  bannerBlockId: 'YOOUR_BANNER_ID',
+  options: { // This is for banner ads
+    overlap: false, // Show under all elements (works only on android)
+    bannerAtTop: true, // Show banner on top of screen, otherwise on bottom
+    bannerSize: YandexAds.BANNER_240x400, // Your banner size
+  },
 });
+```
+### Banner sizes
+
+```javascript
+YandexAds.BANNER_320x50,
+YandexAds.BANNER_320x100,
+YandexAds.BANNER_300x250,
+YandexAds.BANNER_300x300,
+YandexAds.BANNER_240x400,
+YandexAds.BANNER_400x240,
+YandexAds.BANNER_728x90,
 ```
 ***
 ### Rewarded Videos
@@ -140,6 +161,54 @@ window.addEventListener("interstitialClosed", function(){
 **Interstitial Failed To Load**
 ```javascript
 window.addEventListener("interstitialFailedToLoad", function(){
+
+});
+```
+***
+### Banners
+
+#### Load Banner
+_Must be called before `showBanner`
+
+```javascript
+YandexAds.loadBanner();
+```
+***
+#### Show Banner
+
+```javascript
+YandexAds.showBanner();
+```
+***
+#### Hide Banner
+
+```javascript
+YandexAds.hideBanner();
+```
+***
+#### Banner Events
+
+**Banner Loaded**
+```javascript
+window.addEventListener("bannerDidLoad", function(){
+  YandexAds.showBanner();
+});
+```
+**Banner Will Be Shown**
+```javascript
+window.addEventListener("bannerWillPresentScreen", function(){
+
+});
+```
+**Banner Clicked**
+```javascript
+window.addEventListener("bannerDidClick", function(){
+
+});
+```
+**Banner Failed To Load**
+```javascript
+window.addEventListener("bannerFailedToLoad", function(){
 
 });
 ```

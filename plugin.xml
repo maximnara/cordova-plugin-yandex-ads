@@ -57,7 +57,7 @@
         <header-file src="src/ios/YandexAdsPlugin.h" />
         <source-file src="src/ios/YandexAdsPlugin.m" />
 
-        <framework src="YandexMobileAds" type="podspec" spec="~> 5.0.0-alpha.2" />
+        <framework src="YandexMobileAds" type="podspec" spec="~> 5.0.0" />
 
         <framework src="MyTargetYandexMobileAdsAdapters" type="podspec" spec="~> 5.14.4.0" />
         <framework src="myTargetSDK" type="podspec" spec="~> 5.14.4" />

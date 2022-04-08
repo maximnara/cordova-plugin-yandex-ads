@@ -4,6 +4,14 @@ let YandexAds = (function ()
 
     return {
 
+        BANNER_320x50: 'BANNER_320x50',
+        BANNER_320x100: 'BANNER_320x100',
+        BANNER_300x250: 'BANNER_300x250',
+        BANNER_300x300: 'BANNER_300x300',
+        BANNER_240x400: 'BANNER_240x400',
+        BANNER_400x240: 'BANNER_400x240',
+        BANNER_728x90: 'BANNER_728x90',
+
         /**
          * Returns the state of initialization
          */
@@ -32,12 +40,12 @@ let YandexAds = (function ()
         {
             params = defaults(params, {});
 
-            if (params.hasOwnProperty('rewardedBlockId') === false || params.hasOwnProperty('interstitialBlockId') === false)
+            if (params.hasOwnProperty('rewardedBlockId') === false && params.hasOwnProperty('interstitialBlockId') === false && params.hasOwnProperty('bannerBlockId') === false)
             {
-                throw new Error('YandexAds::init - rewardedBlockId and interstitialBlockId is required');
+                throw new Error('YandexAds::init - rewardedBlockId or interstitialBlockId or bannerBlockId is required');
             }
 
-            callPlugin('init', [params.rewardedBlockId, params.interstitialBlockId], function ()
+            callPlugin('init', [params.rewardedBlockId, params.interstitialBlockId, params.bannerBlockId, params.options || {}], function ()
             {
 
                 initialized = true;
@@ -49,7 +57,7 @@ let YandexAds = (function ()
 
             }, params.onFailure);
         },
-        
+
         /**
          * Shows rewarded video
          * @param {String} params.placement - optional placement name

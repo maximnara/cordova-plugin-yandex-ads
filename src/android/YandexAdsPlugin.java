@@ -20,6 +20,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.yandex.mobile.ads.banner.BannerAdView;
+import com.yandex.mobile.ads.banner.AdSize;
+import com.yandex.mobile.ads.banner.BannerAdEventListener;
 import com.yandex.mobile.ads.common.ImpressionData;
 import com.yandex.mobile.ads.common.InitializationListener;
 import com.yandex.mobile.ads.common.MobileAds;
@@ -34,7 +37,11 @@ import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class YandexAdsPlugin extends CordovaPlugin {
 
@@ -54,20 +61,34 @@ public class YandexAdsPlugin extends CordovaPlugin {
     private static final String EVENT_BANNER_DID_LOAD = "bannerDidLoad";
     private static final String EVENT_BANNER_FAILED_TO_LOAD = "bannerFailedToLoad";
     private static final String EVENT_BANNER_DID_CLICK = "bannerDidClick";
-    private static final String EVENT_BANNER_WILL_PRESENT_SCREEN = "bannerWillPresentScreen";
-    private static final String EVENT_BANNER_DID_DISMISS_SCREEN = "bannerDidDismissScreen";
-    private static final String EVENT_BANNER_WILL_LEAVE_APPLICATION = "bannerWillLeaveApplication";
 
     private RelativeLayout bannerContainerLayout;
-    private boolean bannerLoaded;
-    private boolean bannerShowing;
     private CordovaWebView cordovaWebView;
     private ViewGroup parentLayout;
+    private Boolean bannerLoaded = false;
+    private Boolean bannerOverlap = false;
+    private Boolean bannerAtTop = false;
+    private String bannerSize = "BANNER_320x50";
 
     private RewardedAd mRewardedAd;
     private InterstitialAd mInterstitialAd;
+    private BannerAdView mBannerAdView;
     private String rewardedBlockId;
     private String interstitialBlockId;
+    private String bannerBlockId;
+
+    private static Map<String, AdSize> bannerSizes;
+    static
+    {
+        bannerSizes = new HashMap<>();
+        bannerSizes.put("BANNER_240x400", AdSize.BANNER_240x400);
+        bannerSizes.put("BANNER_300x250", AdSize.BANNER_300x250);
+        bannerSizes.put("BANNER_300x300", AdSize.BANNER_300x300);
+        bannerSizes.put("BANNER_320x50", AdSize.BANNER_320x50);
+        bannerSizes.put("BANNER_320x100", AdSize.BANNER_320x100);
+        bannerSizes.put("BANNER_400x240", AdSize.BANNER_400x240);
+        bannerSizes.put("BANNER_728x90", AdSize.BANNER_728x90);
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -154,6 +175,12 @@ public class YandexAdsPlugin extends CordovaPlugin {
         final YandexAdsPlugin self = this;
         rewardedBlockId = args.getString(0);
         interstitialBlockId = args.getString(1);
+        bannerBlockId = args.getString(2);
+
+        JSONObject options = args.optJSONObject(3);
+        if(options.has("overlap")) bannerOverlap = options.optBoolean("overlap");
+        if(options.has("bannerAtTop")) bannerAtTop = options.optBoolean("bannerAtTop");
+        if(options.has("bannerSize")) bannerSize = options.optString("bannerSize");
 
         MobileAds.initialize(this.cordova.getActivity(), new InitializationListener() {
             @Override
@@ -336,28 +363,167 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
     /** ----------------------- BANNER --------------------------- */
     private void showBannerAction(JSONArray args, final CallbackContext callbackContext) {
+        final YandexAdsPlugin self = this;
 
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                if (mBannerAdView != null && bannerLoaded) {
+                    if (bannerOverlap) {
+                        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
+                                RelativeLayout.LayoutParams.MATCH_PARENT,
+                                RelativeLayout.LayoutParams.WRAP_CONTENT);
+                        params2.addRule(bannerAtTop ? RelativeLayout.ALIGN_PARENT_TOP : RelativeLayout.ALIGN_PARENT_BOTTOM);
+
+                        RelativeLayout adViewLayout = new RelativeLayout(cordova.getActivity());
+                        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+                        try {
+                            ((ViewGroup)(((View)webView.getClass().getMethod("getView").invoke(webView)).getParent())).addView(adViewLayout, params);
+                        } catch (Exception e) {
+                            ((ViewGroup) webView).addView(adViewLayout, params);
+                        }
+
+                        adViewLayout.addView(mBannerAdView, params2);
+                        adViewLayout.bringToFront();
+                    } else {
+                        parentLayout = (ViewGroup) cordovaWebView.getView().getParent();
+
+                        View view = cordovaWebView.getView();
+
+                        ViewGroup wvParentView = (ViewGroup) view.getParent();
+
+                        LinearLayout parentView = new LinearLayout(cordovaWebView.getContext());
+
+                        if (wvParentView != null && wvParentView != parentView) {
+                            ViewGroup rootView = (ViewGroup) (view.getParent());
+                            wvParentView.removeView(view);
+                            ((LinearLayout) parentView).setOrientation(LinearLayout.VERTICAL);
+                            parentView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
+                            view.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT, 1.0F));
+                            parentView.addView(view);
+                            rootView.addView(parentView);
+                        }
+
+                        bannerContainerLayout = new RelativeLayout(self.cordova.getActivity());
+
+                        bannerContainerLayout.setGravity(Gravity.BOTTOM);
+
+                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+                        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+                        bannerContainerLayout.addView(mBannerAdView, layoutParams);
+
+                        mBannerAdView.setLayoutParams(layoutParams);
+
+                        if (bannerAtTop) {
+                            parentView.addView(bannerContainerLayout, 0);
+                        } else {
+                            parentView.addView(bannerContainerLayout);
+                        }
+                    }
+                }
+                callbackContext.success();
+            }
+        });
     }
 
     private void loadBannerAction(JSONArray args, final CallbackContext callbackContext) {
+        final YandexAdsPlugin self = this;
+        cordova.getActivity().runOnUiThread(new Runnable() {
 
-    }
+            public void run() {
+                if (bannerSizes.get(bannerSize) != null) {
+                    hideBannerView();
 
-    private void hideBannerView() {
+                    mBannerAdView = new BannerAdView(self.cordova.getActivity());
+                    mBannerAdView.setAdUnitId(bannerBlockId);
+                    mBannerAdView.setAdSize(bannerSizes.get(bannerSize));
 
-    }
+                    final AdRequest adRequest = new AdRequest.Builder().build();
 
-    /**
-     * Destory Banner
-     */
-    private void destroyBanner() {
+                    mBannerAdView.setBannerAdEventListener(new BannerAdEventListener() {
+                        @Override
+                        public void onAdLoaded() {
+                            bannerLoaded = true;
+                            Log.d(TAG, EVENT_BANNER_DID_LOAD);
+                            self.emitWindowEvent(EVENT_BANNER_DID_LOAD);
+                        }
+
+                        @Override
+                        public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
+                            Log.d(TAG, EVENT_BANNER_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
+                            self.emitWindowEvent(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
+                        }
+
+                        @Override
+                        public void onAdClicked() {
+                            Log.d(TAG, EVENT_BANNER_DID_CLICK);
+                            self.emitWindowEvent(EVENT_BANNER_DID_CLICK);
+                        }
+
+                        @Override
+                        public void onImpression(@Nullable ImpressionData var1) {
+                        }
+
+                        @Override
+                        public void onLeftApplication() {
+
+                        }
+
+                        @Override
+                        public void onReturnedToApplication() {
+
+                        }
+                    });
+
+                    mBannerAdView.loadAd(adRequest);
+                }
+                callbackContext.success();
+            }
+        });
     }
 
     /**
      * Destroys Yandex Ads Banner and removes it from the container
      */
     private void hideBannerAction(JSONArray args, final CallbackContext callbackContext) {
-
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                hideBannerView();
+                callbackContext.success();
+            }
+        });
     };
+
+    private void hideBannerView() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                if (mBannerAdView != null) {
+                    if (parentLayout != null && bannerContainerLayout != null) {
+                        if (mBannerAdView.getParent() != null) {
+                            bannerContainerLayout.removeView(mBannerAdView);
+                        }
+                        if (bannerContainerLayout.getParent() != null) {
+                            parentLayout.removeView(bannerContainerLayout);
+                        }
+                    }
+                    destroyBanner();
+                }
+            }
+        });
+    }
+
+    /**
+     * Destory Banner
+     */
+    private void destroyBanner() {
+        if (mBannerAdView != null) {
+            mBannerAdView.destroy();
+            mBannerAdView = null;
+        }
+    }
 
 }
