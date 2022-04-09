@@ -31,4 +31,6 @@
 
 - (void)showInterstitial:(CDVInvokedUrlCommand *)command;
 
+- (void)setUserConsent:(CDVInvokedUrlCommand *)command;
+
 @end

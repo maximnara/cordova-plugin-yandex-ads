@@ -135,6 +135,13 @@ let YandexAds = (function ()
 
             callPlugin('showInterstitial', [], params.onSuccess, params.onFailure);
         },
+
+        setUserConsent: function (value, params)
+        {
+            params = defaults(params, {});
+
+            callPlugin('setUserConsent', [value], params.onSuccess, params.onFailure);
+        },
     }
 })();
 

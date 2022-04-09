@@ -69,6 +69,12 @@ YandexAds.BANNER_240x400,
 YandexAds.BANNER_400x240,
 YandexAds.BANNER_728x90,
 ```
+### Set user consent for GDPR
+Call this on every app launch. More info: https://yandex.ru/dev/mobile-ads/doc/android/quick-start/gdpr-about.html
+
+```javascript
+YandexAds.setUserConsent(true);
+```
 ***
 ### Rewarded Videos
 

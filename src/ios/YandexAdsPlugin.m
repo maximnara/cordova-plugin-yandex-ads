@@ -263,4 +263,10 @@ static NSString *const EVENT_BANNER_WILL_LEAVE_APPLICATION = @"bannerWillLeaveAp
     [self emitWindowEvent:EVENT_INTERSTITIAL_CLOSED];
 }
 
+- (void)setUserConsent:(CDVInvokedUrlCommand *)command {
+    [YMAMobileAds setUserConsent:[[command argumentAtIndex:0] boolValue]];
+    NSLog(@"setUserConsent: ");
+    NSLog([[command argumentAtIndex:0] boolValue] ? @"YES" : @"NO");
+}
+
 @end

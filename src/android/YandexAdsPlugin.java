@@ -133,6 +133,11 @@ public class YandexAdsPlugin extends CordovaPlugin {
             return true;
         }
 
+        else if (action.equals("setUserConsent")) {
+            this.setUserConsentAction(args.getBoolean(0), callbackContext);
+            return true;
+        }
+
         return false;
     }
 
@@ -524,6 +529,12 @@ public class YandexAdsPlugin extends CordovaPlugin {
             mBannerAdView.destroy();
             mBannerAdView = null;
         }
+    }
+
+    private void setUserConsentAction(Boolean value, final CallbackContext callbackContext) {
+        MobileAds.setUserConsent(value);
+        Log.d(TAG, "setUserConsent: " + value);
+        callbackContext.success();
     }
 
 }
