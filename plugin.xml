@@ -13,10 +13,12 @@
     </js-module>
 
     <engines>
-        <engine name="cordova" version=">=3.0" />
-        <engine name="cordova-android" version=">=4.0.0" />
-        <engine name="cordova-ios" version=">=4.0.0" />
+        <engine name="cordova" version=">=11.0" />
+        <engine name="cordova-android" version=">=10.1.2" />
+        <engine name="cordova-ios" version=">=6.2.0" />
     </engines>
+
+    <dependency id="cordova-plugin-add-swift-support"/>
 
     <platform name="android">
 
@@ -54,26 +56,35 @@
                 <param name="ios-package" value="YandexAdsPlugin" />
             </feature>
         </config-file>
+
         <header-file src="src/ios/YandexAdsPlugin.h" />
         <source-file src="src/ios/YandexAdsPlugin.m" />
 
-        <framework src="YandexMobileAds" type="podspec" spec="~> 5.0.0" />
-
-        <framework src="MyTargetYandexMobileAdsAdapters" type="podspec" spec="~> 5.14.4.0" />
-        <framework src="myTargetSDK" type="podspec" spec="~> 5.14.4" />
+        <podspec>
+            <config>
+                <source url="https://cdn.cocoapods.org/"/>
+            </config>
+            <pods use-frameworks="true">
+                <pod name="YandexMobileAds" spec="~> 5.0.0" />
+                <pod name="MyTargetYandexMobileAdsAdapters" spec="~> 5.14.4.0" />
+<!--                <pod name="myTargetSDK" spec="~> 5.14.4" />-->
+            </pods>
+        </podspec>
 
         <framework src="YandexMobileAds.framework" />
         <framework src="YandexMobileMetrica.framework" />
-        <framework src="MyTargetSDK.framework" />
+        <framework src="MyTargetYandexMobileAdsAdapters.framework" />
+<!--        <framework src="MyTargetSDK.framework" />-->
 
-        <framework src="Foundation.framework" />
-        <framework src="CoreLocation.framework" />
-        <framework src="CoreTelephony.framework" />
-        <framework src="CoreMedia.framework" />
-        <framework src="SystemConfiguration.framework" />
-        <framework src="StoreKit.framework" />
-        <framework src="AdSupport.framework" />
-        <framework src="SafariServices.framework" />
-        <framework src="AVFoundation.framework" />
+
+<!--        <framework src="Foundation.framework" />-->
+<!--        <framework src="CoreLocation.framework" />-->
+<!--        <framework src="CoreTelephony.framework" />-->
+<!--        <framework src="CoreMedia.framework" />-->
+<!--        <framework src="SystemConfiguration.framework" />-->
+<!--        <framework src="StoreKit.framework" />-->
+<!--        <framework src="AdSupport.framework" />-->
+<!--        <framework src="SafariServices.framework" />-->
+<!--        <framework src="AVFoundation.framework" />-->
     </platform>
 </plugin>
