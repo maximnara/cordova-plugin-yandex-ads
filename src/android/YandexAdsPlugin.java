@@ -66,6 +66,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
     private CordovaWebView cordovaWebView;
     private ViewGroup parentLayout;
     private Boolean bannerLoaded = false;
+    private Boolean bannerShown = false;
     private Boolean bannerOverlap = false;
     private Boolean bannerAtTop = false;
     private String bannerSize = "BANNER_320x50";
@@ -372,7 +373,8 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                if (mBannerAdView != null && bannerLoaded) {
+                if (mBannerAdView != null && bannerLoaded && !bannerShown) {
+                    bannerShown = true;
                     if (bannerOverlap) {
                         RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
                                 RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -446,6 +448,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
                     mBannerAdView = new BannerAdView(self.cordova.getActivity());
                     mBannerAdView.setAdUnitId(bannerBlockId);
                     mBannerAdView.setAdSize(bannerSizes.get(bannerSize));
+                    bannerShown = false;
 
                     final AdRequest adRequest = new AdRequest.Builder().build();
 
@@ -506,7 +509,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
     private void hideBannerView() {
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                if (mBannerAdView != null) {
+                if (mBannerAdView != null && bannerShown) {
                     if (parentLayout != null && bannerContainerLayout != null) {
                         if (mBannerAdView.getParent() != null) {
                             bannerContainerLayout.removeView(mBannerAdView);
@@ -526,7 +529,11 @@ public class YandexAdsPlugin extends CordovaPlugin {
      */
     private void destroyBanner() {
         if (mBannerAdView != null) {
-            mBannerAdView.destroy();
+            try {
+                mBannerAdView.destroy();
+            } catch(Exception e) {
+                Log.d(TAG, "Exception while destroying banner, seems too many requests");
+            }
             mBannerAdView = null;
         }
     }
