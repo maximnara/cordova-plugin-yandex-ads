@@ -430,6 +430,13 @@ public class YandexAdsPlugin extends CordovaPlugin {
                         } else {
                             parentView.addView(bannerContainerLayout);
                         }
+
+                        ViewGroup contentView = cordova.getActivity().findViewById(android.R.id.content);
+                        if (contentView != null) {
+                            contentView.bringToFront();
+                            contentView.requestLayout();
+                            contentView.requestFocus();
+                        }
                     }
                 }
                 callbackContext.success();
