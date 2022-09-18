@@ -35,8 +35,6 @@
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <meta-data android:name="com.google.android.gms.version"
                        android:value="@integer/google_play_services_version" />
-
-            <activity android:name="com.my.target.common.MyTargetActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
         </config-file>
 
         <source-file src="src/android/YandexAdsPlugin.java"
@@ -67,21 +65,15 @@
             </config>
             <pods use-frameworks="true">
                 <pod name="YandexMobileAds" spec="~> 5.0.0" />
-                <pod name="MyTargetYandexMobileAdsAdapters" spec="~> 5.14.4.0" />
-<!--                <pod name="myTargetSDK" spec="~> 5.14.4" />-->
             </pods>
         </podspec>
 
         <framework src="YandexMobileAds.framework" />
         <framework src="YandexMobileMetrica.framework" />
-        <framework src="MyTargetYandexMobileAdsAdapters.framework" />
 
         <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
 <!--        <preference name="UseSwiftLanguageVersion" value="5" />-->
 <!--        <preference name="UseLegacySwiftLanguageVersion" value="true" />-->
-
-<!--        <framework src="MyTargetSDK.framework" />-->
-
 
 <!--        <framework src="Foundation.framework" />-->
 <!--        <framework src="CoreLocation.framework" />-->
