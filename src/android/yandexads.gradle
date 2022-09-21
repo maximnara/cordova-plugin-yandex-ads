@@ -10,8 +10,5 @@ cdvPluginPostBuildExtras.add({
         implementation fileTree(dir: 'libs', include: ['*.jar'])
         implementation 'com.yandex.android:mobileads:5.3.0'
         implementation 'com.yandex.android:mobmetricalib:5.2.0'
-
-        implementation 'com.yandex.ads.mediation:mobileads-mytarget:5.15.0.0'
-        implementation 'com.my.target:mytarget-sdk:5.15.0'
     }
 });
