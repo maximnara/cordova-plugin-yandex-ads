@@ -1,6 +1,7 @@
 # Yandex Ads for Cordova apps
 
 --------
+## Support plugin [https://boosty.to/maximnara](https://boosty.to/maximnara)
 
 ## Table of Contents
 
