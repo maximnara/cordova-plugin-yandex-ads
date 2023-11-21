@@ -13,9 +13,9 @@
     </js-module>
 
     <engines>
-        <engine name="cordova" version=">=11.0" />
+        <engine name="cordova" version=">=12.0" />
         <engine name="cordova-android" version=">=10.1.2" />
-        <engine name="cordova-ios" version=">=6.2.0" />
+        <engine name="cordova-ios" version=">=7.0.1" />
     </engines>
 
     <platform name="android">
@@ -53,44 +53,26 @@
             <feature name="YandexAdsPlugin">
                 <param name="ios-package" value="YandexAdsPlugin" />
             </feature>
-            <preference name="SwiftVersion" value="5" />
+            <preference name="SwiftVersion" value="5.8" />
+            <preference name="deployment-target" value="13.0.0" />
+            <preference name="ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" value="$(inherited)" />
         </config-file>
 
         <source-file src="src/ios/YandexPluginBlankFile.swift" />
-
-        <header-file src="src/ios/YandexAdsPlugin.h" />
-        <source-file src="src/ios/YandexAdsPlugin.m" />
+        <source-file src="src/ios/YandexAdsPlugin.swift" />
 
         <podspec>
             <config>
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="YandexMobileAds" spec="~> 5.0.0" />
-                <pod name="MyTargetYandexMobileAdsAdapters" spec="~> 5.14.4.0" />
-<!--                <pod name="myTargetSDK" spec="~> 5.14.4" />-->
+                <pod name="YandexMobileAds" spec="~> 6.0.0" />
             </pods>
         </podspec>
 
         <framework src="YandexMobileAds.framework" />
         <framework src="YandexMobileMetrica.framework" />
-        <framework src="MyTargetYandexMobileAdsAdapters.framework" />
 
         <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
-<!--        <preference name="UseSwiftLanguageVersion" value="5" />-->
-<!--        <preference name="UseLegacySwiftLanguageVersion" value="true" />-->
-
-<!--        <framework src="MyTargetSDK.framework" />-->
-
-
-<!--        <framework src="Foundation.framework" />-->
-<!--        <framework src="CoreLocation.framework" />-->
-<!--        <framework src="CoreTelephony.framework" />-->
-<!--        <framework src="CoreMedia.framework" />-->
-<!--        <framework src="SystemConfiguration.framework" />-->
-<!--        <framework src="StoreKit.framework" />-->
-<!--        <framework src="AdSupport.framework" />-->
-<!--        <framework src="SafariServices.framework" />-->
-<!--        <framework src="AVFoundation.framework" />-->
     </platform>
 </plugin>
