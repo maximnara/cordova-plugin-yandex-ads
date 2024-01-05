@@ -14,6 +14,7 @@
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Rewarded%20Video%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Interstitial%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Banner%20Support&style=flat-square">
+- [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=App%20Open%20Ads%20Support&style=flat-square">
 
 -------- 
 
@@ -30,11 +31,13 @@ npm i cordova-plugin-yandex-ads --save
 - [Rewarded Videos](#rewarded-videos)
   - [Load Rewarded Video](#load-rewarded-video)
   - [Show Rewarded Video](#show-rewarded-video)
-  - [Rewarded Video Events](#rewarded-video-events)
 - [Interstitials](#interstitials)
   - [Load Interstitial](#load-interstitial)
   - [Show Interstitial](#show-interstitial)
-  - [Interstitial Events](#interstitial-events)
+- [App open ads](#app-open-ads)
+  - [Load App Open Ads](#load-app-open-ads)
+  - [Show App Open Ads](#show-app-open-ads)
+- [Events](#events)
 - [Banners](#banners)
   - [Load Banner](#load-banner)
   - [Show Banner](#show-banner)
@@ -51,24 +54,15 @@ await YandexAds.init({
   rewardedBlockId: 'YOUR_REWARDER_BLOCK_ID',
   interstitialBlockId: 'YOUR_INTERSTITIAL_ID',
   bannerBlockId: 'YOOUR_BANNER_ID',
+  openAppBlockId: 'YOUR_OPEN_APP_ADS_ID',
   options: { // This is for banner ads
-    overlap: false, // Show under all elements (works only on android)
     bannerAtTop: true, // Show banner on top of screen, otherwise on bottom
-    bannerSize: YandexAds.BANNER_240x400, // Your banner size
+    bannerSize: { width: 468, height: 100 }, // Your banner size
+    // You can skip bannerSize option and width will be as big as possible
   },
 });
 ```
-### Banner sizes
 
-```javascript
-YandexAds.BANNER_320x50,
-YandexAds.BANNER_320x100,
-YandexAds.BANNER_300x250,
-YandexAds.BANNER_300x300,
-YandexAds.BANNER_240x400,
-YandexAds.BANNER_400x240,
-YandexAds.BANNER_728x90,
-```
 ### Set user consent for GDPR
 Call this on every app launch. More info: https://yandex.ru/dev/mobile-ads/doc/android/quick-start/gdpr-about.html
 
@@ -96,43 +90,11 @@ YandexAds.loadRewardedVideo({
 ```javascript
 YandexAds.showRewardedVideo();
 ```
-
-#### Rewarded Video Events
-**Rewarded Video Loaded**
-```javascript
-window.addEventListener("rewardedVideoLoaded", function(){
-  YandexAds.showRewardedVideo();
-});
-```
-**Rewarded Video Rewarded**
-```javascript
-window.addEventListener("rewardedVideoRewardReceived", function(){
-  // some logics
-});
-```
-**Rewarded Video Started**
-```javascript
-window.addEventListener("rewardedVideoStarted", function(){
-
-});
-```
-**Rewarded Video Closed**
-```javascript
-window.addEventListener("rewardedVideoClosed", function(){
-
-});
-```
-**Rewarded Video Failed**
-```javascript
-window.addEventListener("rewardedVideoFailed", function(){
-
-});
-```
 ***
 ### Interstitial
 
 #### Load Interstitial
-_Must be called before `showInterstitial`
+Must be called before `showInterstitial`
 
 ```javascript
 YandexAds.loadInterstitial();
@@ -144,37 +106,25 @@ YandexAds.loadInterstitial();
 YandexAds.showInterstitial();
 ```
 ***
-#### Interstitial Events
+### App Open Ads
 
-**Interstitial Loaded**
+#### Load app open ads
+Must be called before `showOpenAppAds`
+
 ```javascript
-window.addEventListener("interstitialLoaded", function(){
-  YandexAds.showInterstitial();
-});
+YandexAds.loadOpenAppAds();
 ```
-**Interstitial Shown**
-```javascript
-window.addEventListener("interstitialShown", function(){
+***
+#### Show app open ads
 
-});
-```
-**Interstitial Closed**
 ```javascript
-window.addEventListener("interstitialClosed", function(){
-
-});
-```
-**Interstitial Failed To Load**
-```javascript
-window.addEventListener("interstitialFailedToLoad", function(){
-
-});
+YandexAds.showOpenAppAds();
 ```
 ***
 ### Banners
 
 #### Load Banner
-_Must be called before `showBanner`
+Must be called before `showBanner`
 
 ```javascript
 YandexAds.loadBanner();
@@ -192,33 +142,57 @@ YandexAds.showBanner();
 YandexAds.hideBanner();
 ```
 ***
-#### Banner Events
 
-**Banner Loaded**
+### Events
+
+Also you can find them [here](www/yandexads.js)
 ```javascript
-window.addEventListener("bannerDidLoad", function(){
-  YandexAds.showBanner();
+{
+  interstitial: {
+    loaded: 'interstitialDidLoad',
+    failedToLoad: 'interstitialFailedToLoad',
+    shown: 'interstitialDidShow',
+    failedToShow: 'interstitialDidFailToShowWithError',
+    dismissed: 'interstitialDidDismiss',
+    clicked: 'interstitialDidClick',
+    impression: 'interstitialDidTrackImpressionWith',
+  },
+  rewarded: {
+    loaded: 'rewardedDidLoad',
+    failedToLoad: 'rewardedFailedToLoad',
+    rewarded: 'rewardedDidReward',
+    shown: 'rewardedDidShow',
+    failedToShow: 'rewardedDidFailToShowWithError',
+    dismissed: 'rewardedDidDismiss',
+    clicked: 'rewardedDidClick',
+    impression: 'rewardedDidTrackImpressionWith',
+  },
+  openAppAds: {
+    loaded: 'appOpenDidLoad',
+    failedToLoad: 'appOpenFailedToLoad',
+    shown: 'appOpenDidShow',
+    failedToShow: 'appOpenDidFailToShowWithError',
+    dismissed: 'appOpenDidDismiss',
+    clicked: 'appOpenDidClick',
+    impression: 'appOpenDidTrackImpressionWith',
+  },
+  banner: {
+    loaded: 'bannerDidLoad',
+    failedToLoad: 'bannerFailedToLoad',
+    clicked: 'bannerDidClick',
+    impression: 'bannerDidTrackImpressionWith',
+    leftApplication: 'bannerWillLeaveApplication',
+  }
+}
+```
+
+#### How to use events:
+Here we start listen ad loaded event, when it is fired we call `showOpenAppAds` method.
+```javascript
+window.addEventListener(YandexAds.events.openAppAds.loaded, async () => {
+  await YandexAds.showOpenAppAds();
 });
 ```
-**Banner Will Be Shown**
-```javascript
-window.addEventListener("bannerWillPresentScreen", function(){
-
-});
-```
-**Banner Clicked**
-```javascript
-window.addEventListener("bannerDidClick", function(){
-
-});
-```
-**Banner Failed To Load**
-```javascript
-window.addEventListener("bannerFailedToLoad", function(){
-
-});
-```
-***
 
 ### Additional steps
 
