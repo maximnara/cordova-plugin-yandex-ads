@@ -24,6 +24,9 @@
             <feature name="YandexAdsPlugin">
                 <param name="android-package" value="io.luzh.cordova.plugin.YandexAdsPlugin" />
             </feature>
+            <preference name="android-gradleVersion" value="8.4" />
+            <preference name="android-minSdkVersion" value="22" />
+            <preference name="android-targetSdkVersion" value="34" />
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -58,7 +61,6 @@
             <preference name="ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" value="$(inherited)" />
         </config-file>
 
-        <source-file src="src/ios/YandexPluginBlankFile.swift" />
         <source-file src="src/ios/YandexAdsPlugin.swift" />
 
         <podspec>
@@ -66,7 +68,7 @@
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="YandexMobileAds" spec="~> 6.0.0" />
+                <pod name="YandexMobileAds" spec="~> 6.1.0" />
             </pods>
         </podspec>
 

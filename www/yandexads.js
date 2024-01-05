@@ -3,6 +3,44 @@ cordova.define("cordova-plugin-yandex-ads.YandexAds", function(require, exports,
         let initialized = false;
 
         return {
+            events: {
+                interstitial: {
+                    loaded: 'interstitialDidLoad',
+                    failedToLoad: 'interstitialFailedToLoad',
+                    shown: 'interstitialDidShow',
+                    failedToShow: 'interstitialDidFailToShowWithError',
+                    dismissed: 'interstitialDidDismiss',
+                    clicked: 'interstitialDidClick',
+                    impression: 'interstitialDidTrackImpressionWith',
+                },
+                rewarded: {
+                    loaded: 'rewardedDidLoad',
+                    failedToLoad: 'rewardedFailedToLoad',
+                    rewarded: 'rewardedDidReward',
+                    shown: 'rewardedDidShow',
+                    failedToShow: 'rewardedDidFailToShowWithError',
+                    dismissed: 'rewardedDidDismiss',
+                    clicked: 'rewardedDidClick',
+                    impression: 'rewardedDidTrackImpressionWith',
+                },
+                openAppAds: {
+                    loaded: 'appOpenDidLoad',
+                    failedToLoad: 'appOpenFailedToLoad',
+                    shown: 'appOpenDidShow',
+                    failedToShow: 'appOpenDidFailToShowWithError',
+                    dismissed: 'appOpenDidDismiss',
+                    clicked: 'appOpenDidClick',
+                    impression: 'appOpenDidTrackImpressionWith',
+                },
+                banner: {
+                    loaded: 'bannerDidLoad',
+                    failedToLoad: 'bannerFailedToLoad',
+                    clicked: 'bannerDidClick',
+                    impression: 'bannerDidTrackImpressionWith',
+                    leftApplication: 'bannerWillLeaveApplication',
+                },
+            },
+
             /**
              * Returns the state of initialization
              */
