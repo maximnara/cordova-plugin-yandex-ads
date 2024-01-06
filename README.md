@@ -3,6 +3,8 @@
 --------
 ## Support plugin [https://boosty.to/maximnara](https://boosty.to/maximnara)
 
+### [Demo Video](https://youtube.com/watch?v=GN_R5Am5hbI)
+
 ## Table of Contents
 
 - [State of Development](#state-of-development)
