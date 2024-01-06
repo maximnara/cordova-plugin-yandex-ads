@@ -75,6 +75,9 @@ YandexAds.setUserConsent(true);
 ***
 ### Rewarded Videos
 
+https://github.com/maximnara/cordova-plugin-yandex-ads/assets/2614172/520052cd-48ae-4db7-b888-6344fc83b54f
+
+
 #### Load Rewarded Video
 
 ```javascript
@@ -96,6 +99,8 @@ YandexAds.showRewardedVideo();
 ***
 ### Interstitial
 
+https://github.com/maximnara/cordova-plugin-yandex-ads/assets/2614172/2eb27491-e36d-4b2f-bd78-3020b1d86d86
+
 #### Load Interstitial
 Must be called before `showInterstitial`
 
@@ -110,6 +115,8 @@ YandexAds.showInterstitial();
 ```
 ***
 ### App Open Ads
+
+https://github.com/maximnara/cordova-plugin-yandex-ads/assets/2614172/e6761531-05c7-4699-a996-a940a75efee9
 
 #### Load app open ads
 Must be called before `showOpenAppAds`
