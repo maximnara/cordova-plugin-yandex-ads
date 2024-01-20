@@ -10,7 +10,6 @@ let EVENT_APP_OPEN_DID_TRACK_IMPRESSION_WITH = "appOpenDidTrackImpressionWith"
 extension YandexAdsPlugin: YMAAppOpenAdDelegate {
     func appOpenAdDidDismiss(_ appOpenAd: YMAAppOpenAd) {
         self.appOpenAd = nil
-        appOpenDelegate?.appOpenAdControllerDidDismiss(self)
         
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_DISMISS)
     }
@@ -20,7 +19,6 @@ extension YandexAdsPlugin: YMAAppOpenAdDelegate {
         didFailToShowWithError error: Error
     ) {
         self.appOpenAd = nil
-        appOpenDelegate?.appOpenAdController(self, didFailToShowWithError: error)
         
         let data = ErrorData(message: error.localizedDescription)
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_FAIL_TO_SHOW_WITH_ERROR, data: data)
@@ -51,8 +49,6 @@ extension YandexAdsPlugin: YMAAppOpenAdLoaderDelegate {
         self.appOpenAd = appOpenAd
         self.appOpenAd?.delegate = self
         
-        appOpenDelegate?.appOpenAdControllerDidLoad(self)
-        
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_LOAD)
     }
 
@@ -63,8 +59,6 @@ extension YandexAdsPlugin: YMAAppOpenAdLoaderDelegate {
         self.appOpenAd = nil
         let id = error.adUnitId
         let error = error.error
-
-        appOpenDelegate?.appOpenAdController(self, didFailToLoadWithError: error)
         
         let data = ErrorData(message: error.localizedDescription)
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_LOAD, data: data)

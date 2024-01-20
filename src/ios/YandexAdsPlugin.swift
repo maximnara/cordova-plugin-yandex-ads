@@ -16,8 +16,6 @@ class YandexAdsPlugin: CDVPlugin {
     public var rewardedAd: YMARewardedAd?
     public var appOpenAd: YMAAppOpenAd?
     
-    weak var appOpenDelegate: AppOpenAdControllerDelegate?
-    
     override init() {
         self.bannerAtTop = false
     }
