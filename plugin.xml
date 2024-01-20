@@ -61,6 +61,11 @@
             <preference name="ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" value="$(inherited)" />
         </config-file>
 
+        <source-file src="src/ios/BannerAdsExtension.swift" />
+        <source-file src="src/ios/Common.swift" />
+        <source-file src="src/ios/InterstitialAdsExtension.swift" />
+        <source-file src="src/ios/OpenAppAdsExtension.swift" />
+        <source-file src="src/ios/RewardedAdsExtension.swift" />
         <source-file src="src/ios/YandexAdsPlugin.swift" />
 
         <podspec>
