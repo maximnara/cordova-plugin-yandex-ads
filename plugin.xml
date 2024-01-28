@@ -57,8 +57,9 @@
                 <param name="ios-package" value="YandexAdsPlugin" />
             </feature>
             <preference name="SwiftVersion" value="5.8" />
-            <preference name="deployment-target" value="13.0.0" />
-            <preference name="ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" value="$(inherited)" />
+            <preference name="deployment-target" value="13.0" />
+            <preference name="IPHONEOS_DEPLOYMENT_TARGET" value="13.0" />
+            <preference name="ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" value="YES" />
         </config-file>
 
         <source-file src="src/ios/Common.swift" />
@@ -74,13 +75,11 @@
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="YandexMobileAds" spec="~> 6.1.0" />
+                <pod name="YandexMobileAds" spec="~> 6.3.0" />
             </pods>
         </podspec>
 
         <framework src="YandexMobileAds.framework" />
         <framework src="YandexMobileMetrica.framework" />
-
-        <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
     </platform>
 </plugin>

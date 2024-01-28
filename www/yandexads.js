@@ -54,24 +54,23 @@ let YandexAds = (function () {
          */
         init: function init(params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            if (params.hasOwnProperty('rewardedBlockId') === false && params.hasOwnProperty('interstitialBlockId') === false && params.hasOwnProperty('bannerBlockId') === false)
-            {
-                throw new Error('YandexAds::init - rewardedBlockId or interstitialBlockId or bannerBlockId is required');
-            }
-
-            callPlugin('run', [params.rewardedBlockId, params.interstitialBlockId, params.bannerBlockId, params.openAppBlockId, params.options || {}], function ()
-            {
-
-                initialized = true;
-
-                if (isFunction(params.onSuccess))
+                if (params.hasOwnProperty('rewardedBlockId') === false && params.hasOwnProperty('interstitialBlockId') === false && params.hasOwnProperty('bannerBlockId') === false)
                 {
-                    params.onSuccess();
+                    throw new Error('YandexAds::init - rewardedBlockId or interstitialBlockId or bannerBlockId is required');
                 }
 
-            }, params.onFailure);
+                callPlugin('run', [params.rewardedBlockId, params.interstitialBlockId, params.bannerBlockId, params.openAppBlockId, params.options || {}], function ()
+                {
+
+                    initialized = true;
+
+                    resolve();
+
+                }, reject);
+            });
         },
 
         /**
@@ -82,9 +81,11 @@ let YandexAds = (function () {
          */
         loadRewardedVideo: function loadRewardedVideo(params)
         {
-            params = defaults(params, { placement: 'default' });
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('loadRewardedVideo', [], params.onSuccess, params.onFailure);
+                callPlugin('loadRewardedVideo', [], resolve, reject);
+            });
         },
 
         /**
@@ -95,9 +96,11 @@ let YandexAds = (function () {
          */
         showRewardedVideo: function showRewardedVideo(params)
         {
-            params = defaults(params, { placement: 'default' });
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('showRewardedVideo', [], params.onSuccess, params.onFailure);
+                callPlugin('showRewardedVideo', [], resolve, reject);
+            });
         },
 
         /**
@@ -108,9 +111,11 @@ let YandexAds = (function () {
          */
         loadOpenAppAds: function loadRewardedVideo(params)
         {
-            params = defaults(params, { placement: 'default' });
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('loadOpenAppAds', [], params.onSuccess, params.onFailure);
+                callPlugin('loadOpenAppAds', [], resolve, reject);
+            });
         },
 
         /**
@@ -121,9 +126,11 @@ let YandexAds = (function () {
          */
         showOpenAppAds: function showRewardedVideo(params)
         {
-            params = defaults(params, { placement: 'default' });
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('showOpenAppAds', [], params.onSuccess, params.onFailure);
+                callPlugin('showOpenAppAds', [], resolve, reject);
+            });
         },
 
         /**
@@ -132,9 +139,11 @@ let YandexAds = (function () {
          */
         showBanner: function showBanner(params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('showBanner', [], params.onSuccess, params.onFailure);
+                callPlugin('showBanner', [], resolve, reject);
+            });
         },
 
         /**
@@ -143,19 +152,23 @@ let YandexAds = (function () {
          */
         hideBanner: function showBanner(params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('hideBanner', [], params.onSuccess, params.onFailure);
+                callPlugin('hideBanner', [], resolve, reject);
+            });
         },
 
         /**
          * Loads interstitial
          */
-        loadBanner: function loadBanner(params)
+        loadBanner: async function loadBanner(params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('loadBanner', [], params.onSuccess, params.onFailure);
+                callPlugin('loadBanner', [], resolve, reject);
+            });
         },
 
         /**
@@ -163,9 +176,11 @@ let YandexAds = (function () {
          */
         loadInterstitial: function loadInterstitial(params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('loadInterstitial', [], params.onSuccess, params.onFailure);
+                callPlugin('loadInterstitial', [], resolve, reject);
+            });
         },
 
         /**
@@ -173,16 +188,20 @@ let YandexAds = (function () {
          */
         showInterstitial: function showInterstitial(params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('showInterstitial', [], params.onSuccess, params.onFailure);
+                callPlugin('showInterstitial', [], resolve, reject);
+            });
         },
 
         setUserConsent: function (value, params)
         {
-            params = defaults(params, {});
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
 
-            callPlugin('setUserConsent', [value], params.onSuccess, params.onFailure);
+                callPlugin('setUserConsent', [value], resolve, reject);
+            });
         },
     }
 })();

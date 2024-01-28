@@ -4,9 +4,29 @@ extension YandexAdsPlugin {
         var message: String
     }
     
-    public func sendResult(command: CDVInvokedUrlCommand, status: CDVCommandStatus) {
+    public func sendResult(command: CDVInvokedUrlCommand) {
         var pluginResult = CDVPluginResult(
-          status: status
+          status: CDVCommandStatus_OK
+        )
+
+        self.commandDelegate!.send(
+            pluginResult,
+            callbackId: command.callbackId
+        )
+    }
+
+    public func sendError(command: CDVInvokedUrlCommand, code: String, message: String) {
+        let errorObj = [
+            "code": code,
+            "message": message,
+            "data": [
+                "methodName": command.methodName,
+            ]
+        ] as [String : Any];
+
+        let pluginResult = CDVPluginResult(
+          status: CDVCommandStatus_ERROR,
+          messageAs: errorObj
         )
         
         self.commandDelegate!.send(
