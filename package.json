@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-yandex-ads",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Yandex ads for cordova based development",
   "repository": {
     "type": "git",
