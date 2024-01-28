@@ -1,5 +1,5 @@
 # Yandex Ads for Cordova apps
-![NPM Downloads](https://img.shields.io/npm/dt/cordova-plugin-yandex-ads) ![NPM Version](https://img.shields.io/npm/v/cordova-plugin-yandex-ads)
+[![NPM Downloads](https://img.shields.io/npm/dt/cordova-plugin-yandex-ads)](https://www.npmjs.com/package/cordova-plugin-yandex-ads) [![NPM Version](https://img.shields.io/npm/v/cordova-plugin-yandex-ads)](https://www.npmjs.com/package/cordova-plugin-yandex-ads)
 
 --------
 ## Support plugin [https://boosty.to/maximnara](https://boosty.to/maximnara)
