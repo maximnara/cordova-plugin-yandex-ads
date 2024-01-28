@@ -19,6 +19,7 @@
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Interstitial%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Banner%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=App%20Open%20Ads%20Support&style=flat-square">
+- [ ] <img src="https://img.shields.io/badge/-In%20Development-yellow.svg?label=Instream%20Support&style=flat-square">
 
 -------- 
 
