@@ -3,6 +3,33 @@ import YandexMobileAds
 let EVENT_REWARDED_DID_LOAD = "rewardedDidLoad"
 let EVENT_REWARDED_FAILED_TO_LOAD = "rewardedFailedToLoad"
 
+extension YandexAdsPlugin {
+    @objc(loadRewardedVideo:)
+    func loadRewardedVideo(command: CDVInvokedUrlCommand) {
+        if self.rewardedBlockId == nil {
+            self.sendError(command: command, code: PLUGIN_NOT_INITIALIZED_ERROR["code"]!, message: PLUGIN_NOT_INITIALIZED_ERROR["message"]!);
+            return;
+        }
+
+        let configuration = YMAAdRequestConfiguration(adUnitID: self.rewardedBlockId!)
+        self.rewardedAdLoader.loadAd(with: configuration)
+
+        self.sendResult(command: command);
+    }
+
+    @objc(showRewardedVideo:)
+    func showRewardedVideo(command: CDVInvokedUrlCommand) {
+        if self.rewardedBlockId == nil {
+            self.sendError(command: command, code: PLUGIN_NOT_INITIALIZED_ERROR["code"]!, message: PLUGIN_NOT_INITIALIZED_ERROR["message"]!);
+            return;
+        }
+
+        self.rewardedAd?.show(from: viewController)
+
+        self.sendResult(command: command);
+    }
+}
+
 // MARK: - YMARewardedAdLoaderDelegate
 extension YandexAdsPlugin: YMARewardedAdLoaderDelegate {
     func rewardedAdLoader(_ adLoader: YMARewardedAdLoader, didLoad rewardedAd: YMARewardedAd) {

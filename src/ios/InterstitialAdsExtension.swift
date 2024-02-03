@@ -3,6 +3,33 @@ import YandexMobileAds
 let EVENT_INTERSTITIAL_DID_LOAD = "interstitialDidLoad"
 let EVENT_INTERSTITIAL_FAILED_TO_LOAD = "interstitialFailedToLoad"
 
+extension YandexAdsPlugin {
+    @objc(loadInterstitial:)
+    func loadInterstitial(command: CDVInvokedUrlCommand) {
+        if self.interstitialBlockId == nil {
+            self.sendError(command: command, code: PLUGIN_NOT_INITIALIZED_ERROR["code"]!, message: PLUGIN_NOT_INITIALIZED_ERROR["message"]!);
+            return;
+        }
+
+        let configuration = YMAAdRequestConfiguration(adUnitID: self.interstitialBlockId!)
+        self.interstitialAdLoader.loadAd(with: configuration)
+
+        self.sendResult(command: command);
+    }
+
+    @objc(showInterstitial:)
+    func showInterstitial(command: CDVInvokedUrlCommand) {
+        if self.interstitialBlockId == nil {
+            self.sendError(command: command, code: PLUGIN_NOT_INITIALIZED_ERROR["code"]!, message: PLUGIN_NOT_INITIALIZED_ERROR["message"]!);
+            return;
+        }
+
+        self.interstitialAd?.show(from: viewController)
+
+        self.sendResult(command: command);
+    }
+}
+
 extension YandexAdsPlugin: YMAInterstitialAdLoaderDelegate {
     func interstitialAdLoader(_ adLoader: YMAInterstitialAdLoader, didLoad interstitialAd: YMAInterstitialAd) {
         self.interstitialAd = interstitialAd
