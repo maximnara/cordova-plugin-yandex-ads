@@ -20,9 +20,22 @@ class YandexAdsPlugin: CDVPlugin {
     public var interstitialAd: YMAInterstitialAd?
     public var rewardedAd: YMARewardedAd?
     public var appOpenAd: YMAAppOpenAd?
+    private var bannerAdViewCache: YMAAdView?
+
+    private var superView: UIView?
+    private var stackViewInlineBannerView: UIStackView?
+    private var bannerStackView: UIView?
 
     override init() {
+        super.init()
+
         self.bannerAtTop = false
+    }
+
+    override func pluginInitialize() {
+        super.pluginInitialize()
+
+        self.superView = webView.superview
     }
 
     @objc(run:)
@@ -40,8 +53,6 @@ class YandexAdsPlugin: CDVPlugin {
 
         self.sendResult(command: command);
     }
-
-    private var bannerAdViewCache: YMAAdView?;
 
     func getBannerAdView() -> YMAAdView {
         if self.bannerAdViewCache != nil {
@@ -84,15 +95,63 @@ class YandexAdsPlugin: CDVPlugin {
         }
 
         let banner = self.getBannerAdView();
-        print(banner)
 
+        if (self.bannerSize != nil && self.bannerSize?["width"] != nil && self.bannerSize?["height"] != nil) {
+            self.showInlineBanner(banner: banner)
+        } else {
+            self.showOverlapBanner(banner: banner)
+        }
+
+        self.sendResult(command: command);
+    }
+
+    func showOverlapBanner(banner: YMAAdView) {
         if self.bannerAtTop != nil && self.bannerAtTop == true {
             banner.displayAtTop(in: webView)
         } else {
             banner.displayAtBottom(in: webView)
         }
+    }
 
-        self.sendResult(command: command);
+    func showInlineBanner(banner: YMAAdView) {
+        let stackview: UIStackView = {
+            let view = UIStackView()
+            view.axis = .vertical
+            view.distribution = .fill
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
+        }()
+
+        self.stackViewInlineBannerView = stackview
+
+        self.bannerStackView = {
+            let view = UIView()
+            view.backgroundColor = .black
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
+        }()
+
+        self.superView?.addSubview(stackview)
+        webView.removeFromSuperview()
+
+        if self.bannerAtTop != nil && self.bannerAtTop == true {
+            stackview.addArrangedSubview(self.bannerStackView!)
+            stackview.addArrangedSubview(webView)
+        } else {
+            stackview.addArrangedSubview(webView)
+            stackview.addArrangedSubview(self.bannerStackView!)
+        }
+
+        banner.displayAtTop(in: self.bannerStackView!)
+
+        NSLayoutConstraint.activate([
+            stackview.leadingAnchor.constraint(equalTo: self.superView!.leadingAnchor, constant: 0.0),
+            stackview.trailingAnchor.constraint(equalTo: self.superView!.trailingAnchor, constant: 0.0),
+            stackview.topAnchor.constraint(equalTo: self.superView!.topAnchor, constant: 0.0),
+            stackview.bottomAnchor.constraint(equalTo: self.superView!.bottomAnchor, constant: 0.0),
+            self.bannerStackView!.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: 0.0),
+            self.bannerStackView!.bottomAnchor.constraint(equalTo: banner.bottomAnchor, constant: 0.0),
+        ])
     }
 
     @objc(hideBanner:)
@@ -102,8 +161,21 @@ class YandexAdsPlugin: CDVPlugin {
             return;
         }
 
+        if (self.bannerSize != nil && self.bannerSize?["width"] != nil && self.bannerSize?["height"] != nil) {
+            self.stackViewInlineBannerView?.removeFromSuperview()
+            self.superView!.addSubview(webView)
+
+            NSLayoutConstraint.activate([
+                webView.leadingAnchor.constraint(equalTo: self.superView!.leadingAnchor, constant: 0.0),
+                webView.trailingAnchor.constraint(equalTo: self.superView!.trailingAnchor, constant: 0.0),
+                webView.topAnchor.constraint(equalTo: self.superView!.topAnchor, constant: 0.0),
+                webView.bottomAnchor.constraint(equalTo: self.superView!.bottomAnchor, constant: 0.0),
+            ])
+        } else {
+            self.getBannerAdView().removeFromSuperview()
+        }
+
         self.getBannerAdView().delegate = nil
-        self.getBannerAdView().removeFromSuperview()
         self.bannerAdViewCache = nil
 
         self.sendResult(command: command);
