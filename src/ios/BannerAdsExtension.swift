@@ -60,6 +60,40 @@ extension YandexAdsPlugin {
         self.sendResult(command: command);
     }
 
+    @objc(reloadBanner:)
+    func reloadBanner(command: CDVInvokedUrlCommand) {
+        if self.bannerBlockId == nil {
+            self.sendError(command: command, code: PLUGIN_NOT_INITIALIZED_ERROR["code"]!, message: PLUGIN_NOT_INITIALIZED_ERROR["message"]!);
+            return;
+        }
+
+        // hide banner
+        self.getBannerAdView().removeFromSuperview()
+
+        self.getBannerAdView().delegate = nil
+        self.bannerAdViewCache = nil
+
+        // load new banner
+        self.bannerReloaded = true
+
+        let banner = self.getBannerAdView();
+        banner.loadAd()
+
+        // show banner
+        if (self.bannerSize != nil && self.bannerSize?["width"] != nil && self.bannerSize?["height"] != nil) {
+            banner.displayAtTop(in: self.bannerStackView!)
+
+            NSLayoutConstraint.activate([
+                self.bannerStackView!.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: 0.0),
+                self.bannerStackView!.bottomAnchor.constraint(equalTo: banner.bottomAnchor, constant: 0.0),
+            ])
+        } else {
+            self.showOverlapBanner(banner: banner)
+        }
+
+        self.sendResult(command: command);
+    }
+
     func showOverlapBanner(banner: YMAAdView) {
         if self.bannerAtTop != nil && self.bannerAtTop == true {
             banner.displayAtTop(in: webView)
@@ -139,7 +173,10 @@ extension YandexAdsPlugin {
 
 extension YandexAdsPlugin: YMAAdViewDelegate {
     func adViewDidLoad(_ adView: YMAAdView) {
-        self.emitWindowEvent(event: EVENT_BANNER_DID_LOAD)
+        if (self.bannerReloaded == nil || self.bannerReloaded == false) {
+            self.emitWindowEvent(event: EVENT_BANNER_DID_LOAD)
+        }
+        self.bannerReloaded = false
     }
 
     func adViewDidClick(_ adView: YMAAdView) {

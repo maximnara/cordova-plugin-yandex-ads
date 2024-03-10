@@ -172,6 +172,18 @@ let YandexAds = (function () {
         },
 
         /**
+         * Reloads banner
+         */
+        reloadBanner: async function loadBanner(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('reloadBanner', [], resolve, reject);
+            });
+        },
+
+        /**
          * Loads interstitial
          */
         loadInterstitial: function loadInterstitial(params)

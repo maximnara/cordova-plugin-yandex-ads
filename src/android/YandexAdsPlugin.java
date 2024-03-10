@@ -1,9 +1,11 @@
 package io.luzh.cordova.plugin;
 
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Gravity;
+import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
 
@@ -97,6 +99,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
     private InterstitialAd mInterstitialAd = null;
     private AppOpenAd mOpenAppAd = null;
     private BannerAdView mBannerAdView;
+    private RelativeLayout mAdViewLayout;
 
     private String rewardedBlockId;
     private String interstitialBlockId;
@@ -153,6 +156,11 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
         else if (action.equals("showOpenAppAds")) {
             this.showOpenAppAdsAction(args, callbackContext);
+            return true;
+        }
+
+        else if (action.equals("reloadBanner")) {
+            this.reloadBannerAction(args, callbackContext);
             return true;
         }
 
@@ -488,16 +496,16 @@ public class YandexAdsPlugin extends CordovaPlugin {
                                 RelativeLayout.LayoutParams.WRAP_CONTENT);
                         params2.addRule(bannerAtTop ? RelativeLayout.ALIGN_PARENT_TOP : RelativeLayout.ALIGN_PARENT_BOTTOM);
 
-                        RelativeLayout adViewLayout = new RelativeLayout(cordova.getActivity());
+                        mAdViewLayout = new RelativeLayout(cordova.getActivity());
                         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
                         try {
-                            ((ViewGroup)(((View)webView.getClass().getMethod("getView").invoke(webView)).getParent())).addView(adViewLayout, params);
+                            ((ViewGroup)(((View)webView.getClass().getMethod("getView").invoke(webView)).getParent())).addView(mAdViewLayout, params);
                         } catch (Exception e) {
-                            ((ViewGroup) webView).addView(adViewLayout, params);
+                            ((ViewGroup) webView).addView(mAdViewLayout, params);
                         }
 
-                        adViewLayout.addView(mBannerAdView, params2);
-                        adViewLayout.bringToFront();
+                        mAdViewLayout.addView(mBannerAdView, params2);
+                        mAdViewLayout.bringToFront();
                     } else {
                         parentLayout = (ViewGroup) cordovaWebView.getView().getParent();
 
@@ -522,6 +530,7 @@ public class YandexAdsPlugin extends CordovaPlugin {
                         bannerContainerLayout = new RelativeLayout(self.cordova.getActivity());
 
                         bannerContainerLayout.setGravity(Gravity.BOTTOM);
+                        bannerContainerLayout.setBackgroundColor(0x000000);
 
                         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                                 RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -532,6 +541,22 @@ public class YandexAdsPlugin extends CordovaPlugin {
 
                         mBannerAdView.setLayoutParams(layoutParams);
 
+                        // detect banner size
+                        ViewTreeObserver vto = mBannerAdView.getViewTreeObserver();
+                        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                                    mBannerAdView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                                } else {
+                                    mBannerAdView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                }
+
+                                bannerContainerLayout.setMinimumHeight(mBannerAdView.getMeasuredHeight());
+                            }
+                        });
+
+                        // show banner
                         if (bannerAtTop) {
                             parentView.addView(bannerContainerLayout, 0);
                         } else {
@@ -606,6 +631,116 @@ public class YandexAdsPlugin extends CordovaPlugin {
                     @Override
                     public void onReturnedToApplication() {}
                 });
+
+                mBannerAdView.loadAd(adRequest);
+
+                callbackContext.success();
+            }
+        });
+    }
+
+    private void reloadBannerAction(JSONArray args, final CallbackContext callbackContext) {
+        final YandexAdsPlugin self = this;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                if (mBannerAdView != null && bannerShown) {
+                    if (parentLayout != null && bannerContainerLayout != null) {
+                        if (mBannerAdView.getParent() != null) {
+                            bannerContainerLayout.removeView(mBannerAdView);
+                            Log.d(TAG, "+++ AFTER REMOVE " + bannerContainerLayout.getChildCount());
+                        }
+                        if (mAdViewLayout != null) {
+                            mAdViewLayout.removeView(mBannerAdView);
+                        }
+                    }
+                    destroyBanner();
+                }
+
+                mBannerAdView = new BannerAdView(self.cordova.getActivity());
+                mBannerAdView.setAdUnitId(bannerBlockId);
+
+                if (bannerSize != null && bannerSize.has("width") && bannerSize.has("height")) {
+                    mBannerAdView.setAdSize(BannerAdSize.inlineSize(self.cordova.getContext(), bannerSize.optInt("width"), bannerSize.optInt("height")));
+                } else {
+                    int adWidth = self.cordovaWebView.getView().getWidth();
+                    mBannerAdView.setAdSize(BannerAdSize.stickySize(self.cordova.getContext(), adWidth));
+                }
+
+                bannerShown = false;
+
+                final AdRequest adRequest = new AdRequest.Builder().build();
+
+                mBannerAdView.setBannerAdEventListener(new BannerAdEventListener() {
+                    @Override
+                    public void onAdLoaded() {
+                        bannerLoaded = true;
+                        Log.d(TAG, EVENT_BANNER_DID_LOAD);
+//                        self.emitWindowEvent(EVENT_BANNER_DID_LOAD);
+
+                        if (bannerSize == null) {
+                            RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
+                                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                                    RelativeLayout.LayoutParams.WRAP_CONTENT);
+                            params2.addRule(bannerAtTop ? RelativeLayout.ALIGN_PARENT_TOP : RelativeLayout.ALIGN_PARENT_BOTTOM);
+
+                            mAdViewLayout.addView(mBannerAdView, params2);
+                            mAdViewLayout.bringToFront();
+                        } else {
+                            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+                            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+                            bannerContainerLayout.addView(mBannerAdView, layoutParams);
+
+                            mBannerAdView.setLayoutParams(layoutParams);
+                        }
+
+                        bannerShown = true;
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
+                        Log.d(TAG, EVENT_BANNER_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
+                        self.emitWindowEvent(EVENT_BANNER_FAILED_TO_LOAD);
+                    }
+
+                    @Override
+                    public void onAdClicked() {
+                        Log.d(TAG, EVENT_BANNER_DID_CLICK);
+                        self.emitWindowEvent(EVENT_BANNER_DID_CLICK);
+                    }
+
+                    @Override
+                    public void onImpression(@Nullable ImpressionData var1) {
+                        Log.d(TAG, EVENT_BANNER_IMPRESSION);
+                        self.emitWindowEvent(EVENT_BANNER_IMPRESSION);
+                    }
+
+                    @Override
+                    public void onLeftApplication() {
+                        Log.d(TAG, EVENT_BANNER_LEFT_APPLICATION);
+                        self.emitWindowEvent(EVENT_BANNER_LEFT_APPLICATION);
+                    }
+
+                    @Override
+                    public void onReturnedToApplication() {}
+                });
+
+                if (bannerSize != null) {
+                    ViewTreeObserver vto = mBannerAdView.getViewTreeObserver();
+                    vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                                mBannerAdView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                            } else {
+                                mBannerAdView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            }
+                            bannerContainerLayout.setMinimumHeight(mBannerAdView.getMeasuredHeight());
+                        }
+                    });
+                }
 
                 mBannerAdView.loadAd(adRequest);
 

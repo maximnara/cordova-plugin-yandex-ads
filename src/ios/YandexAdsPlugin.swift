@@ -25,11 +25,13 @@ class YandexAdsPlugin: CDVPlugin {
     public var superView: UIView?
     public var stackViewInlineBannerView: UIStackView?
     public var bannerStackView: UIView?
+    public var bannerReloaded: Bool?
 
     override init() {
         super.init()
 
         self.bannerAtTop = false
+        self.bannerReloaded = false
     }
 
     override func pluginInitialize() {
