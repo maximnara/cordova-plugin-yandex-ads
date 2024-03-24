@@ -43,5 +43,6 @@
   "bugs": {
     "url": "https://github.com/maximnara/cordova-plugin-yandex-ads/issues"
   },
-  "homepage": "https://github.com/maximnara/cordova-plugin-yandex-ads"
+  "homepage": "https://github.com/maximnara/cordova-plugin-yandex-ads",
+  "types": "./www/yandexads.d.ts"
 }
