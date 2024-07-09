@@ -1,802 +1,143 @@
-package io.luzh.cordova.plugin;
+package io.luzh.cordova.plugin
 
-import android.os.Build;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Gravity;
-import android.view.ViewTreeObserver;
-import android.widget.RelativeLayout;
-import android.widget.LinearLayout;
+import android.net.Uri
+import android.util.Log
+import com.demo.stand.R
+import com.yandex.mobile.ads.common.InitializationListener
+import com.yandex.mobile.ads.common.MobileAds.initialize
+import com.yandex.mobile.ads.common.MobileAds.setUserConsent
+import io.luzh.cordova.plugin.helpers.BannerAdsHelper
+import io.luzh.cordova.plugin.helpers.InterstitialAdsHelper
+import io.luzh.cordova.plugin.helpers.OpenAppAdsHelper
+import io.luzh.cordova.plugin.helpers.RewardedAdsHelper
+import io.luzh.cordova.plugin.helpers.instream.InstreamAdsHelper
+import io.luzh.cordova.plugin.utils.Constants
+import io.luzh.cordova.plugin.utils.Constants.KEY_BANNER_AT_TOP
+import io.luzh.cordova.plugin.utils.Constants.KEY_BANNER_SIZE
+import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_BANNER
+import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_INTERSTITIAL
+import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_OPEN_APP
+import io.luzh.cordova.plugin.utils.Constants.KEY_OPTIONS
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_INSTREAM_APP_ADS
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_INSTREAM_APP_ADS
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_INTERSTITIAL
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_OPEN_APP_ADS
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_RELOAD_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_RUN
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SET_USER_CONSENT
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_INTERSTITIAL
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_OPEN_APP_ADS
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_REWARDED_VIDEO
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_lOAD_REWARDED_VIDEO
+import org.apache.cordova.CallbackContext
+import org.apache.cordova.CordovaInterface
+import org.apache.cordova.CordovaPlugin
+import org.apache.cordova.CordovaWebView
+import org.json.JSONArray
+import org.json.JSONException
 
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+class YandexAdsPlugin : CordovaPlugin() {
+    private var cordovaWebView: CordovaWebView? = null
 
-import com.yandex.mobile.ads.common.AdRequestConfiguration;
-import com.yandex.mobile.ads.banner.BannerAdView;
-import com.yandex.mobile.ads.banner.BannerAdSize;
-import com.yandex.mobile.ads.banner.BannerAdEventListener;
-import com.yandex.mobile.ads.common.AdError;
-import com.yandex.mobile.ads.common.ImpressionData;
-import com.yandex.mobile.ads.common.InitializationListener;
-import com.yandex.mobile.ads.common.MobileAds;
-import com.yandex.mobile.ads.common.AdRequest;
-import com.yandex.mobile.ads.common.AdRequestError;
+    private var bannerAdsHelper: BannerAdsHelper? = null
+    private var rewardedAdsHelper: RewardedAdsHelper? = null
+    private var interstitialAdsHelper: InterstitialAdsHelper? = null
+    private var openAppAdsHelper: OpenAppAdsHelper? = null
+    private var instreamAdsHelper: InstreamAdsHelper? = null
 
-import com.yandex.mobile.ads.rewarded.RewardedAdLoader;
-import com.yandex.mobile.ads.rewarded.RewardedAdLoadListener;
-import com.yandex.mobile.ads.rewarded.RewardedAd;
-import com.yandex.mobile.ads.rewarded.RewardedAdEventListener;
-import com.yandex.mobile.ads.rewarded.Reward;
+    @Throws(JSONException::class)
+    override fun execute(
+        action: String,
+        args: JSONArray,
+        callbackContext: CallbackContext
+    ): Boolean {
+        return when (action) {
+            // Global
+            ACTION_RUN -> { initAction(args, callbackContext); true }
+            ACTION_SET_USER_CONSENT -> { setUserConsentAction(args.getBoolean(0), callbackContext); true }
 
-import com.yandex.mobile.ads.interstitial.InterstitialAdLoader;
-import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener;
-import com.yandex.mobile.ads.interstitial.InterstitialAd;
-import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener;
+            // Reward video ads
+            ACTION_lOAD_REWARDED_VIDEO -> { rewardedAdsHelper?.load(callbackContext); true }
+            ACTION_SHOW_REWARDED_VIDEO -> { rewardedAdsHelper?.show(callbackContext); true }
 
-import com.yandex.mobile.ads.appopenad.AppOpenAdLoader;
-import com.yandex.mobile.ads.appopenad.AppOpenAdLoadListener;
-import com.yandex.mobile.ads.appopenad.AppOpenAd;
-import com.yandex.mobile.ads.appopenad.AppOpenAdEventListener;
+            // Banner ads
+            ACTION_LOAD_BANNER -> { bannerAdsHelper?.load(callbackContext); true }
+            ACTION_SHOW_BANNER -> { bannerAdsHelper?.show(callbackContext); true }
+            ACTION_HIDE_BANNER -> { bannerAdsHelper?.hide(callbackContext); true }
+            ACTION_RELOAD_BANNER -> { bannerAdsHelper?.reload(callbackContext); true }
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+            // Interstitial ads
+//            ACTION_LOAD_INTERSTITIAL -> { interstitialAdsHelper?.load(callbackContext); true }
+//            ACTION_SHOW_INTERSTITIAL -> { interstitialAdsHelper?.show(callbackContext); true }
 
-public class YandexAdsPlugin extends CordovaPlugin {
+            ACTION_LOAD_INTERSTITIAL -> { instreamAdsHelper?.load(callbackContext); true }
+            ACTION_SHOW_INTERSTITIAL -> {  true }
 
-    private static final String TAG = "YANDEX_ADS";
+            // Open app ads
+            ACTION_LOAD_OPEN_APP_ADS -> { openAppAdsHelper?.load(callbackContext); true }
+            ACTION_SHOW_OPEN_APP_ADS -> { openAppAdsHelper?.show(callbackContext); true }
 
-    // Interstitial events
-    private static final String EVENT_INTERSTITIAL_LOADED = "interstitialDidLoad";
-    private static final String EVENT_INTERSTITIAL_FAILED_TO_LOAD = "interstitialFailedToLoad";
-    private static final String EVENT_INTERSTITIAL_SHOWN = "interstitialDidShow";
-    private static final String EVENT_INTERSTITIAL_FAILED_TO_SHOW = "interstitialDidFailToShowWithError";
-    private static final String EVENT_INTERSTITIAL_AD_DISMISSED = "interstitialDidDismiss";
-    private static final String EVENT_INTERSTITIAL_AD_CLICKED = "interstitialDidClick";
-    private static final String EVENT_INTERSTITIAL_AD_IMPRESSION = "interstitialDidTrackImpressionWith";
+            // Instream ads
+            ACTION_LOAD_INSTREAM_APP_ADS -> { instreamAdsHelper?.load(callbackContext); true }
+            ACTION_HIDE_INSTREAM_APP_ADS -> { instreamAdsHelper?.hide(); true }
 
-    // Open App Ad events
-    private static final String EVENT_APP_OPEN_ADS_LOADED = "appOpenDidLoad";
-    private static final String EVENT_APP_OPEN_ADS_FAILED_TO_LOAD = "appOpenFailedToLoad";
-    private static final String EVENT_APP_OPEN_ADS_SHOWN = "appOpenDidShow";
-    private static final String EVENT_APP_OPEN_ADS_FAILED_TO_SHOW = "appOpenDidFailToShowWithError";
-    private static final String EVENT_APP_OPEN_ADS_DISMISSED = "appOpenDidDismiss";
-    private static final String EVENT_APP_OPEN_ADS_CLICKED = "appOpenDidClick";
-    private static final String EVENT_APP_OPEN_ADS_IMPRESSION = "appOpenDidTrackImpressionWith";
-
-    // Rewarded events
-    private static final String EVENT_REWARDED_VIDEO_LOADED = "rewardedDidLoad";
-    private static final String EVENT_REWARDED_VIDEO_FAILED_TO_LOAD = "rewardedFailedToLoad";
-    private static final String EVENT_REWARDED_VIDEO_REWARDED = "rewardedDidReward";
-    private static final String EVENT_REWARDED_VIDEO_SHOWN = "rewardedDidShow";
-    private static final String EVENT_REWARDED_VIDEO_FAILED_TO_SHOW = "rewardedDidFailToShowWithError";
-    private static final String EVENT_REWARDED_VIDEO_AD_DISMISSED = "rewardedDidDismiss";
-    private static final String EVENT_REWARDED_VIDEO_AD_CLICKED = "rewardedDidClick";
-    private static final String EVENT_REWARDED_VIDEO_AD_IMPRESSION = "rewardedDidTrackImpressionWith";
-
-    // Banner events
-    private static final String EVENT_BANNER_DID_LOAD = "bannerDidLoad";
-    private static final String EVENT_BANNER_FAILED_TO_LOAD = "bannerFailedToLoad";
-    private static final String EVENT_BANNER_DID_CLICK = "bannerDidClick";
-    private static final String EVENT_BANNER_IMPRESSION = "bannerDidTrackImpressionWith";
-    private static final String EVENT_BANNER_LEFT_APPLICATION = "bannerWillLeaveApplication";
-
-    private RelativeLayout bannerContainerLayout;
-    private CordovaWebView cordovaWebView;
-    private ViewGroup parentLayout;
-    private Boolean bannerLoaded = false;
-    private Boolean bannerShown = false;
-    private Boolean bannerAtTop = false;
-
-    private JSONObject bannerSize = null;
-
-    private RewardedAd mRewardedAd = null;
-    private InterstitialAd mInterstitialAd = null;
-    private AppOpenAd mOpenAppAd = null;
-    private BannerAdView mBannerAdView;
-    private RelativeLayout mAdViewLayout;
-
-    private String rewardedBlockId;
-    private String interstitialBlockId;
-    private String bannerBlockId;
-    private String openAppBlockId;
-
-    @Override
-    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
-
-        if (action.equals("run")) {
-            this.initAction(args, callbackContext);
-            return true;
+            // Unknown
+            else -> false
         }
-
-        else if (action.equals("loadRewardedVideo")) {
-            this.loadRewardedAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("showRewardedVideo")) {
-            this.showRewardedVideoAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("loadBanner")) {
-            this.loadBannerAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("showBanner")) {
-            this.showBannerAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("hideBanner")) {
-            this.hideBannerAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("loadInterstitial")) {
-            this.loadInterstitialAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("showInterstitial")) {
-            this.showInterstitialAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("loadOpenAppAds")) {
-            this.loadOpenAppAdsAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("showOpenAppAds")) {
-            this.showOpenAppAdsAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("reloadBanner")) {
-            this.reloadBannerAction(args, callbackContext);
-            return true;
-        }
-
-        else if (action.equals("setUserConsent")) {
-            this.setUserConsentAction(args.getBoolean(0), callbackContext);
-            return true;
-        }
-
-        return false;
     }
 
-    /** --------------------------------------------------------------- */
-
-    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-        cordovaWebView = webView;
-        super.initialize(cordova, webView);
+    override fun initialize(cordova: CordovaInterface?, webView: CordovaWebView?) {
+        cordovaWebView = webView
     }
 
-    /** ----------------------- UTILS --------------------------- */
-
-    private void emitWindowEvent(final String event) {
-        final CordovaWebView view = this.webView;
-        this.cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                view.loadUrl(String.format("javascript:cordova.fireWindowEvent('%s');", event));
-            }
-        });
+    override fun onPause(multitasking: Boolean) {
+        instreamAdsHelper?.onPause()
     }
 
-    private void emitWindowEvent(final String event, final JSONObject data) {
-        final CordovaWebView view = this.webView;
-        this.cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                view.loadUrl(String.format("javascript:cordova.fireWindowEvent('%s', %s);", event, data.toString()));
-            }
-        });
+    override fun onResume(multitasking: Boolean) {
+        instreamAdsHelper?.onResume()
     }
 
-    /** ----------------------- INITIALIZATION --------------------------- */
+    override fun onDestroy() {
+        instreamAdsHelper?.onDestroy()
+    }
 
     /**
      * Intilization action Initializes Yandex Ads
      */
-    private void initAction(JSONArray args, final CallbackContext callbackContext) throws JSONException {
+    private fun initAction(args: JSONArray, callbackContext: CallbackContext) {
+        val webView = cordovaWebView ?: return
+        val rewardedBlockId: String = args.getString(KEY_BLOCK_ID_INTERSTITIAL)
+        val interstitialBlockId: String = args.getString(KEY_BLOCK_ID_INTERSTITIAL)
+        val bannerBlockId: String = args.getString(KEY_BLOCK_ID_BANNER)
+        val openAppBlockId: String = args.getString(KEY_BLOCK_ID_OPEN_APP)
+        val instreamBlockId: String = "demo-instream-vmap-yandex"
+//        val instreamBlockId: String = "R-V-5486136-1"
+        val options = args.optJSONObject(KEY_OPTIONS)
 
-        final YandexAdsPlugin self = this;
-        rewardedBlockId = args.getString(0);
-        interstitialBlockId = args.getString(1);
-        bannerBlockId = args.getString(2);
-        openAppBlockId = args.getString(3);
+        val bannerAtTop = options.optBoolean(KEY_BANNER_AT_TOP, false)
+        val bannerSize = options.optJSONObject(KEY_BANNER_SIZE)
+        val intreamContentUrl = Uri.parse("android.resource://" + cordova.context.packageName + "/" + R.raw.jc).toString()
 
-        JSONObject options = args.optJSONObject(4);
-//        if(options.has("overlap")) bannerOverlap = options.optBoolean("overlap");
-        if(options.has("bannerAtTop")) bannerAtTop = options.optBoolean("bannerAtTop");
-        if(options.has("bannerSize")) bannerSize = options.optJSONObject("bannerSize");
+        bannerAdsHelper = BannerAdsHelper(this, webView, bannerBlockId, bannerAtTop, bannerSize)
+        rewardedAdsHelper = RewardedAdsHelper(this, webView, rewardedBlockId)
+        interstitialAdsHelper = InterstitialAdsHelper(this, webView, interstitialBlockId)
+        openAppAdsHelper = OpenAppAdsHelper(this, webView, openAppBlockId)
+        instreamAdsHelper = InstreamAdsHelper(this, webView, instreamBlockId, intreamContentUrl)
 
-        MobileAds.initialize(this.cordova.getActivity(), new InitializationListener() {
-            @Override
-            public void onInitializationCompleted() {
-                callbackContext.success();
-            }
-        });
+
+        initialize(
+            cordova.activity,
+            InitializationListener { callbackContext.success() })
     }
 
-    /**
-     * Initializes Rewarded ads
-     *
-     * @todo Provide
-     */
-    private RewardedAdLoader getRewardedLoader() {
 
-        final YandexAdsPlugin self = this;
-        final RewardedAdLoader loader = new RewardedAdLoader(this.cordova.getContext());
-
-        loader.setAdLoadListener(new RewardedAdLoadListener() {
-            @Override
-            public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
-                mRewardedAd = rewardedAd;
-
-                mRewardedAd.setAdEventListener(new RewardedAdEventListener() {
-
-                    @Override
-                    public void onRewarded(final Reward reward) {
-                        Log.d(TAG, EVENT_REWARDED_VIDEO_REWARDED);
-                        self.emitWindowEvent(EVENT_REWARDED_VIDEO_REWARDED);
-                    }
-
-                    @Override
-                    public void onAdShown() {
-                        Log.d(TAG, EVENT_REWARDED_VIDEO_SHOWN);
-                        self.emitWindowEvent(EVENT_REWARDED_VIDEO_SHOWN);
-                    }
-
-                    @Override
-                    public void onAdFailedToShow(@NonNull AdError var1) {
-                        Log.d(TAG, EVENT_REWARDED_VIDEO_FAILED_TO_SHOW);
-                        self.emitWindowEvent(EVENT_REWARDED_VIDEO_FAILED_TO_SHOW);
-                    }
-
-                    @Override
-                    public void onAdDismissed() {
-                        Log.d(TAG, EVENT_REWARDED_VIDEO_AD_DISMISSED);
-                        self.emitWindowEvent(EVENT_REWARDED_VIDEO_AD_DISMISSED);
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, EVENT_REWARDED_VIDEO_AD_CLICKED);
-                        self.emitWindowEvent(EVENT_REWARDED_VIDEO_AD_CLICKED);
-                    }
-
-                    @Override
-                    public void onAdImpression(@Nullable ImpressionData var1) {
-                        Log.d(TAG, EVENT_REWARDED_VIDEO_AD_IMPRESSION);
-                        self.emitWindowEvent(EVENT_REWARDED_VIDEO_AD_IMPRESSION);
-                    }
-                });
-
-                Log.d(TAG, EVENT_REWARDED_VIDEO_LOADED);
-                self.emitWindowEvent(EVENT_REWARDED_VIDEO_LOADED);
-            }
-
-            @Override
-            public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
-                Log.d(TAG, EVENT_REWARDED_VIDEO_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
-                self.emitWindowEvent(EVENT_REWARDED_VIDEO_FAILED_TO_LOAD);
-            }
-        });
-
-        return loader;
+    private fun setUserConsentAction(value: Boolean, callbackContext: CallbackContext) {
+        setUserConsent(value)
+        Log.d(Constants.YANDEX_ADS_TAG, "setUserConsent: $value")
+        callbackContext.success()
     }
-
-    private InterstitialAdLoader getInterstitialLoader() {
-
-        final YandexAdsPlugin self = this;
-
-        final InterstitialAdLoader loader = new InterstitialAdLoader(this.cordova.getContext());
-        loader.setAdLoadListener(new InterstitialAdLoadListener() {
-            @Override
-            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                mInterstitialAd = interstitialAd;
-
-                mInterstitialAd.setAdEventListener(new InterstitialAdEventListener() {
-                    @Override
-                    public void onAdShown() {
-                        Log.d(TAG, EVENT_INTERSTITIAL_SHOWN);
-                        self.emitWindowEvent(EVENT_INTERSTITIAL_SHOWN);
-                    }
-
-                    @Override
-                    public void onAdFailedToShow(@NonNull AdError error) {
-                        Log.d(TAG, EVENT_INTERSTITIAL_FAILED_TO_SHOW);
-                        self.emitWindowEvent(EVENT_INTERSTITIAL_FAILED_TO_SHOW);
-                    }
-
-                    @Override
-                    public void onAdDismissed() {
-                        Log.d(TAG, EVENT_INTERSTITIAL_AD_DISMISSED);
-                        self.emitWindowEvent(EVENT_INTERSTITIAL_AD_DISMISSED);
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, EVENT_INTERSTITIAL_AD_CLICKED);
-                        self.emitWindowEvent(EVENT_INTERSTITIAL_AD_CLICKED);
-                    }
-
-                    @Override
-                    public void onAdImpression(@Nullable ImpressionData var1) {
-                        Log.d(TAG, EVENT_INTERSTITIAL_AD_IMPRESSION);
-                        self.emitWindowEvent(EVENT_INTERSTITIAL_AD_IMPRESSION);
-                    }
-                });
-
-                Log.d(TAG, EVENT_INTERSTITIAL_LOADED);
-                self.emitWindowEvent(EVENT_INTERSTITIAL_LOADED);
-            }
-
-            @Override
-            public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
-                Log.d(TAG, EVENT_INTERSTITIAL_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
-                self.emitWindowEvent(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
-            }
-        });
-
-        return loader;
-    }
-
-    private AppOpenAdLoader getOpenAppAdsLoader() {
-        final YandexAdsPlugin self = this;
-
-        final AppOpenAdLoader loader = new AppOpenAdLoader(this.cordova.getContext());
-        loader.setAdLoadListener(new AppOpenAdLoadListener() {
-            @Override
-            public void onAdLoaded(@NonNull AppOpenAd openAppAd) {
-                mOpenAppAd = openAppAd;
-
-                mOpenAppAd.setAdEventListener(new AppOpenAdEventListener() {
-                    @Override
-                    public void onAdShown() {
-                        Log.d(TAG, EVENT_APP_OPEN_ADS_SHOWN);
-                        self.emitWindowEvent(EVENT_APP_OPEN_ADS_SHOWN);
-                    }
-
-                    @Override
-                    public void onAdFailedToShow(@NonNull AdError error) {
-                        Log.d(TAG, EVENT_APP_OPEN_ADS_FAILED_TO_SHOW);
-                        self.emitWindowEvent(EVENT_APP_OPEN_ADS_FAILED_TO_SHOW);
-                    }
-
-                    @Override
-                    public void onAdDismissed() {
-                        Log.d(TAG, EVENT_APP_OPEN_ADS_DISMISSED);
-                        self.emitWindowEvent(EVENT_APP_OPEN_ADS_DISMISSED);
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, EVENT_APP_OPEN_ADS_CLICKED);
-                        self.emitWindowEvent(EVENT_APP_OPEN_ADS_CLICKED);
-                    }
-
-                    @Override
-                    public void onAdImpression(@Nullable ImpressionData var1) {
-                        Log.d(TAG, EVENT_APP_OPEN_ADS_IMPRESSION);
-                        self.emitWindowEvent(EVENT_APP_OPEN_ADS_IMPRESSION);
-                    }
-                });
-
-                Log.d(TAG, EVENT_APP_OPEN_ADS_LOADED);
-                self.emitWindowEvent(EVENT_APP_OPEN_ADS_LOADED);
-            }
-
-            @Override
-            public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
-                Log.d(TAG, EVENT_APP_OPEN_ADS_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
-                self.emitWindowEvent(EVENT_APP_OPEN_ADS_FAILED_TO_LOAD);
-            }
-        });
-
-        return loader;
-    }
-
-    /** ----------------------- REWARDED VIDEO --------------------------- */
-
-    private void loadRewardedAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                final RewardedAdLoader loader = self.getRewardedLoader();
-                loader.loadAd(new AdRequestConfiguration.Builder(rewardedBlockId).build());
-                callbackContext.success();
-            }
-        });
-    }
-
-    private void showRewardedVideoAction(JSONArray args, final CallbackContext callbackContext) throws JSONException {
-        final YandexAdsPlugin self = this;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (mRewardedAd != null) {
-                    mRewardedAd.show(self.cordova.getActivity());
-                }
-                callbackContext.success();
-            }
-        });
-    }
-
-    /** ----------------------- INTERSTITIAL --------------------------- */
-
-    private void loadInterstitialAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                final InterstitialAdLoader loader = self.getInterstitialLoader();
-                loader.loadAd(new AdRequestConfiguration.Builder(interstitialBlockId).build());
-                callbackContext.success();
-            }
-        });
-    }
-
-    private void showInterstitialAction(JSONArray args, final CallbackContext callbackContext) throws JSONException {
-        final YandexAdsPlugin self = this;
-
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (mInterstitialAd != null) {
-                    mInterstitialAd.show(self.cordova.getActivity());
-                }
-                callbackContext.success();
-            }
-        });
-    }
-
-    /** -------------------- OPEN APP ADS ------------------------ */
-    private void loadOpenAppAdsAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                final AppOpenAdLoader loader = self.getOpenAppAdsLoader();
-                loader.loadAd(new AdRequestConfiguration.Builder(openAppBlockId).build());
-                callbackContext.success();
-            }
-        });
-    }
-
-    private void showOpenAppAdsAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (mOpenAppAd != null) {
-                    mOpenAppAd.show(self.cordova.getActivity());
-                }
-                callbackContext.success();
-            }
-        });
-    }
-
-    /** ----------------------- BANNER --------------------------- */
-    private void showBannerAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (mBannerAdView != null && bannerLoaded && !bannerShown) {
-                    bannerShown = true;
-                    if (bannerSize == null) {
-                        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
-                                RelativeLayout.LayoutParams.MATCH_PARENT,
-                                RelativeLayout.LayoutParams.WRAP_CONTENT);
-                        params2.addRule(bannerAtTop ? RelativeLayout.ALIGN_PARENT_TOP : RelativeLayout.ALIGN_PARENT_BOTTOM);
-
-                        mAdViewLayout = new RelativeLayout(cordova.getActivity());
-                        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-                        try {
-                            ((ViewGroup)(((View)webView.getClass().getMethod("getView").invoke(webView)).getParent())).addView(mAdViewLayout, params);
-                        } catch (Exception e) {
-                            ((ViewGroup) webView).addView(mAdViewLayout, params);
-                        }
-
-                        mAdViewLayout.addView(mBannerAdView, params2);
-                        mAdViewLayout.bringToFront();
-                    } else {
-                        parentLayout = (ViewGroup) cordovaWebView.getView().getParent();
-
-                        View view = cordovaWebView.getView();
-
-                        ViewGroup wvParentView = (ViewGroup) view.getParent();
-
-                        LinearLayout parentView = new LinearLayout(cordovaWebView.getContext());
-
-                        if (wvParentView != null && wvParentView != parentView) {
-                            ViewGroup rootView = (ViewGroup) (view.getParent());
-                            wvParentView.removeView(view);
-                            ((LinearLayout) parentView).setOrientation(LinearLayout.VERTICAL);
-                            parentView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
-                            view.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT, 1.0F));
-                            parentView.addView(view);
-                            rootView.addView(parentView);
-                        }
-
-                        bannerContainerLayout = new RelativeLayout(self.cordova.getActivity());
-
-                        bannerContainerLayout.setGravity(Gravity.BOTTOM);
-                        bannerContainerLayout.setBackgroundColor(0x000000);
-
-                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-                        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-
-                        bannerContainerLayout.addView(mBannerAdView, layoutParams);
-
-                        mBannerAdView.setLayoutParams(layoutParams);
-
-                        // detect banner size
-                        ViewTreeObserver vto = mBannerAdView.getViewTreeObserver();
-                        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                            @Override
-                            public void onGlobalLayout() {
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                                    mBannerAdView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                                } else {
-                                    mBannerAdView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                                }
-
-                                bannerContainerLayout.setMinimumHeight(mBannerAdView.getMeasuredHeight());
-                            }
-                        });
-
-                        // show banner
-                        if (bannerAtTop) {
-                            parentView.addView(bannerContainerLayout, 0);
-                        } else {
-                            parentView.addView(bannerContainerLayout);
-                        }
-
-                        ViewGroup contentView = cordova.getActivity().findViewById(android.R.id.content);
-                        if (contentView != null) {
-                            contentView.bringToFront();
-                            contentView.requestLayout();
-                            contentView.requestFocus();
-                        }
-                    }
-                }
-                callbackContext.success();
-            }
-        });
-    }
-
-    private void loadBannerAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                hideBannerView();
-
-                mBannerAdView = new BannerAdView(self.cordova.getActivity());
-                mBannerAdView.setAdUnitId(bannerBlockId);
-
-                if (bannerSize != null && bannerSize.has("width") && bannerSize.has("height")) {
-                    mBannerAdView.setAdSize(BannerAdSize.inlineSize(self.cordova.getContext(), bannerSize.optInt("width"), bannerSize.optInt("height")));
-                } else {
-                    int adWidth = self.cordovaWebView.getView().getWidth();
-                    mBannerAdView.setAdSize(BannerAdSize.stickySize(self.cordova.getContext(), adWidth));
-                }
-
-                bannerShown = false;
-
-                final AdRequest adRequest = new AdRequest.Builder().build();
-
-                mBannerAdView.setBannerAdEventListener(new BannerAdEventListener() {
-                    @Override
-                    public void onAdLoaded() {
-                        bannerLoaded = true;
-                        Log.d(TAG, EVENT_BANNER_DID_LOAD);
-                        self.emitWindowEvent(EVENT_BANNER_DID_LOAD);
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
-                        Log.d(TAG, EVENT_BANNER_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
-                        self.emitWindowEvent(EVENT_BANNER_FAILED_TO_LOAD);
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, EVENT_BANNER_DID_CLICK);
-                        self.emitWindowEvent(EVENT_BANNER_DID_CLICK);
-                    }
-
-                    @Override
-                    public void onImpression(@Nullable ImpressionData var1) {
-                        Log.d(TAG, EVENT_BANNER_IMPRESSION);
-                        self.emitWindowEvent(EVENT_BANNER_IMPRESSION);
-                    }
-
-                    @Override
-                    public void onLeftApplication() {
-                        Log.d(TAG, EVENT_BANNER_LEFT_APPLICATION);
-                        self.emitWindowEvent(EVENT_BANNER_LEFT_APPLICATION);
-                    }
-
-                    @Override
-                    public void onReturnedToApplication() {}
-                });
-
-                mBannerAdView.loadAd(adRequest);
-
-                callbackContext.success();
-            }
-        });
-    }
-
-    private void reloadBannerAction(JSONArray args, final CallbackContext callbackContext) {
-        final YandexAdsPlugin self = this;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (mBannerAdView != null && bannerShown) {
-                    if (parentLayout != null && bannerContainerLayout != null) {
-                        if (mBannerAdView.getParent() != null) {
-                            bannerContainerLayout.removeView(mBannerAdView);
-                            Log.d(TAG, "+++ AFTER REMOVE " + bannerContainerLayout.getChildCount());
-                        }
-                        if (mAdViewLayout != null) {
-                            mAdViewLayout.removeView(mBannerAdView);
-                        }
-                    }
-                    destroyBanner();
-                }
-
-                mBannerAdView = new BannerAdView(self.cordova.getActivity());
-                mBannerAdView.setAdUnitId(bannerBlockId);
-
-                if (bannerSize != null && bannerSize.has("width") && bannerSize.has("height")) {
-                    mBannerAdView.setAdSize(BannerAdSize.inlineSize(self.cordova.getContext(), bannerSize.optInt("width"), bannerSize.optInt("height")));
-                } else {
-                    int adWidth = self.cordovaWebView.getView().getWidth();
-                    mBannerAdView.setAdSize(BannerAdSize.stickySize(self.cordova.getContext(), adWidth));
-                }
-
-                bannerShown = false;
-
-                final AdRequest adRequest = new AdRequest.Builder().build();
-
-                mBannerAdView.setBannerAdEventListener(new BannerAdEventListener() {
-                    @Override
-                    public void onAdLoaded() {
-                        bannerLoaded = true;
-                        Log.d(TAG, EVENT_BANNER_DID_LOAD);
-//                        self.emitWindowEvent(EVENT_BANNER_DID_LOAD);
-
-                        if (bannerSize == null) {
-                            RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
-                                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                                    RelativeLayout.LayoutParams.WRAP_CONTENT);
-                            params2.addRule(bannerAtTop ? RelativeLayout.ALIGN_PARENT_TOP : RelativeLayout.ALIGN_PARENT_BOTTOM);
-
-                            mAdViewLayout.addView(mBannerAdView, params2);
-                            mAdViewLayout.bringToFront();
-                        } else {
-                            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-                            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-
-                            bannerContainerLayout.addView(mBannerAdView, layoutParams);
-
-                            mBannerAdView.setLayoutParams(layoutParams);
-                        }
-
-                        bannerShown = true;
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
-                        Log.d(TAG, EVENT_BANNER_FAILED_TO_LOAD + ": " + adRequestError.getDescription());
-                        self.emitWindowEvent(EVENT_BANNER_FAILED_TO_LOAD);
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, EVENT_BANNER_DID_CLICK);
-                        self.emitWindowEvent(EVENT_BANNER_DID_CLICK);
-                    }
-
-                    @Override
-                    public void onImpression(@Nullable ImpressionData var1) {
-                        Log.d(TAG, EVENT_BANNER_IMPRESSION);
-                        self.emitWindowEvent(EVENT_BANNER_IMPRESSION);
-                    }
-
-                    @Override
-                    public void onLeftApplication() {
-                        Log.d(TAG, EVENT_BANNER_LEFT_APPLICATION);
-                        self.emitWindowEvent(EVENT_BANNER_LEFT_APPLICATION);
-                    }
-
-                    @Override
-                    public void onReturnedToApplication() {}
-                });
-
-                if (bannerSize != null) {
-                    ViewTreeObserver vto = mBannerAdView.getViewTreeObserver();
-                    vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                                mBannerAdView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                            } else {
-                                mBannerAdView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                            }
-                            bannerContainerLayout.setMinimumHeight(mBannerAdView.getMeasuredHeight());
-                        }
-                    });
-                }
-
-                mBannerAdView.loadAd(adRequest);
-
-                callbackContext.success();
-            }
-        });
-    }
-
-    /**
-     * Destroys Yandex Ads Banner and removes it from the container
-     */
-    private void hideBannerAction(JSONArray args, final CallbackContext callbackContext) {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                hideBannerView();
-                callbackContext.success();
-            }
-        });
-    };
-
-    private void hideBannerView() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (mBannerAdView != null && bannerShown) {
-                    if (parentLayout != null && bannerContainerLayout != null) {
-                        if (mBannerAdView.getParent() != null) {
-                            bannerContainerLayout.removeView(mBannerAdView);
-                        }
-                        if (bannerContainerLayout.getParent() != null) {
-                            parentLayout.removeView(bannerContainerLayout);
-                        }
-                    }
-                    destroyBanner();
-                }
-            }
-        });
-    }
-
-    /**
-     * Destory Banner
-     */
-    private void destroyBanner() {
-        if (mBannerAdView != null) {
-            try {
-                mBannerAdView.destroy();
-            } catch(Exception e) {
-                Log.d(TAG, "Exception while destroying banner, seems too many requests");
-            }
-            mBannerAdView = null;
-        }
-    }
-
-    private void setUserConsentAction(Boolean value, final CallbackContext callbackContext) {
-        MobileAds.setUserConsent(value);
-        Log.d(TAG, "setUserConsent: " + value);
-        callbackContext.success();
-    }
-
 }
