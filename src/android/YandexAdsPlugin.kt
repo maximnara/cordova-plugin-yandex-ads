@@ -70,11 +70,8 @@ class YandexAdsPlugin : CordovaPlugin() {
             ACTION_RELOAD_BANNER -> { bannerAdsHelper?.reload(callbackContext); true }
 
             // Interstitial ads
-//            ACTION_LOAD_INTERSTITIAL -> { interstitialAdsHelper?.load(callbackContext); true }
-//            ACTION_SHOW_INTERSTITIAL -> { interstitialAdsHelper?.show(callbackContext); true }
-
-            ACTION_LOAD_INTERSTITIAL -> { instreamAdsHelper?.load(callbackContext); true }
-            ACTION_SHOW_INTERSTITIAL -> {  true }
+            ACTION_LOAD_INTERSTITIAL -> { interstitialAdsHelper?.load(callbackContext); true }
+            ACTION_SHOW_INTERSTITIAL -> { interstitialAdsHelper?.show(callbackContext); true }
 
             // Open app ads
             ACTION_LOAD_OPEN_APP_ADS -> { openAppAdsHelper?.load(callbackContext); true }
@@ -120,6 +117,8 @@ class YandexAdsPlugin : CordovaPlugin() {
 
         val bannerAtTop = options.optBoolean(KEY_BANNER_AT_TOP, false)
         val bannerSize = options.optJSONObject(KEY_BANNER_SIZE)
+
+        // исправь меня
         val intreamContentUrl = Uri.parse("android.resource://" + cordova.context.packageName + "/" + R.raw.jc).toString()
 
         bannerAdsHelper = BannerAdsHelper(this, webView, bannerBlockId, bannerAtTop, bannerSize)
