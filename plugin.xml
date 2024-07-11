@@ -27,6 +27,7 @@
             <preference name="android-gradleVersion" value="8.4" />
             <preference name="android-minSdkVersion" value="22" />
             <preference name="android-targetSdkVersion" value="34" />
+            <preference name="GradlePluginKotlinEnabled" value="true" />
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -42,13 +43,13 @@
             <activity android:name="com.my.target.common.MyTargetActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
         </config-file>
 
-        <source-file src="src/android/YandexAdsPlugin.java"
-                     target-dir="src/io/luzh/cordova/plugin" />
+        <source-file src="src/android" target-dir="java/io.luzh.cordova.plugin" />
         <framework src="src/android/yandexads.gradle" custom="true" type="gradleReference" />
 
         <framework src="com.android.support:support-v4:+" />
         <framework src="com.android.support:recyclerview-v7:27.1.1" />
 
+        <resource-file src="src/android/jc.mp4" target="res/raw/jc.mp4" />
     </platform>
 
     <platform name="ios">

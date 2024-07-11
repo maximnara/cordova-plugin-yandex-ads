@@ -207,6 +207,51 @@ let YandexAds = (function () {
             });
         },
 
+        /**
+         * Loads instream ads
+         * @param {String} params.placement - optional placement name
+         * @param {Function} params.onSuccess - optional on success callback
+         * @param {Function} param.onFailure - optional on failure callback
+         */
+        loadInstream: function loadInstream(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('loadInstream', [], resolve, reject);
+            });
+        },
+
+        /**
+         * Show instream ads
+         * @param {String} params.placement - optional placement name
+         * @param {Function} params.onSuccess - optional on success callback
+         * @param {Function} param.onFailure - optional on failure callback
+         */
+        showInstream: function showInstream(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('showInstream', [], resolve, reject);
+            });
+        },
+
+        /**
+         * Hide instream ads
+         * @param {String} params.placement - optional placement name
+         * @param {Function} params.onSuccess - optional on success callback
+         * @param {Function} param.onFailure - optional on failure callback
+         */
+        hideInstream: function hideInstream(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('hideInstream', [], resolve, reject);
+            });
+        },
+
         setUserConsent: function (value, params)
         {
             return new Promise((resolve, reject) => {
