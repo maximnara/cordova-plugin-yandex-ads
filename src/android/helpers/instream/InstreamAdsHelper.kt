@@ -32,6 +32,7 @@ internal class InstreamAdsHelper(
     private var activePlayer: SamplePlayer? = null
     private var playerView: PlayerView? = null
     private var instreamAdView: InstreamAdView? = null
+    private var instreamAd: InstreamAd? = null
     private var isLoaded = false
 
     override fun getLoader() = InstreamAdLoader(cordova.context).apply {
@@ -41,37 +42,50 @@ internal class InstreamAdsHelper(
     override fun load(callbackContext: CallbackContext) {
         init()
 
+        val instreamAdLoader = getLoader()
+        val configuration = InstreamAdRequestConfiguration.Builder(blockId).build()
+
+        instreamAdLoader.loadInstreamAd(cordova.context, configuration)
+        callbackContext.success()
+    }
+
+    override fun show(callbackContext: CallbackContext) {
         cordova.activity.runOnUiThread {
+            val instreamAd = this.instreamAd ?: return@runOnUiThread
+
             (cordovaWebView.view as? ViewGroup)?.let { view ->
                 instreamAdView?.let {
-                    if(!view.contains(it)) view.addView(it)
+                    if (!view.contains(it)) view.addView(it)
                 }
             }
 
-            val instreamAdLoader = getLoader()
-
-            val configuration = InstreamAdRequestConfiguration.Builder(blockId).build()
-            instreamAdLoader.loadInstreamAd(cordova.context, configuration)
+            instreamAdBinder = InstreamAdBinder(
+                cordova.context,
+                instreamAd,
+                checkNotNull(instreamAdPlayer),
+                checkNotNull(contentVideoPlayer)
+            ).apply {
+                setInstreamAdListener(eventLogger)
+                instreamAdView?.let { bind(it) }
+            }
 
             callbackContext.success()
         }
     }
 
-    override fun show(callbackContext: CallbackContext) {
-        callbackContext.error(ERROR_MANUAL_SHOW)
-    }
-
-    fun hide(){
+    fun hide(callbackContext: CallbackContext) {
         cordova.activity.runOnUiThread {
             (cordovaWebView.view as? ViewGroup)?.let {
                 it.removeView(instreamAdView)
                 onDestroy()
             }
+
+            callbackContext.success()
         }
     }
 
     fun onPause() {
-        if(!isLoaded) return
+        if (!isLoaded) return
 
         if (instreamAdPlayer?.isPlaying() == true || contentVideoPlayer?.isPlaying() == true) {
             activePlayer = contentVideoPlayer?.takeIf { it.isPlaying() } ?: instreamAdPlayer
@@ -82,7 +96,7 @@ internal class InstreamAdsHelper(
     }
 
     fun onResume() {
-        if(!isLoaded) return
+        if (!isLoaded) return
 
         activePlayer?.resume()
     }
@@ -106,20 +120,6 @@ internal class InstreamAdsHelper(
         instreamAdView?.addView(playerView)
 
         playerView?.let { initPlayer(it) }
-    }
-
-    private fun showInstreamAd(instreamAd: InstreamAd) {
-        cordova.activity.runOnUiThread {
-            instreamAdBinder = InstreamAdBinder(
-                cordova.context,
-                instreamAd,
-                checkNotNull(instreamAdPlayer),
-                checkNotNull(contentVideoPlayer)
-            ).apply {
-                setInstreamAdListener(eventLogger)
-                instreamAdView?.let { bind(it) }
-            }
-        }
     }
 
     private fun initPlayer(player: PlayerView) {
@@ -156,7 +156,7 @@ internal class InstreamAdsHelper(
         override fun onInstreamAdLoaded(instreamAd: InstreamAd) {
             emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_LOADED)
             isLoaded = true
-            showInstreamAd(instreamAd)
+            this@InstreamAdsHelper.instreamAd = instreamAd
         }
 
         override fun onError(reason: String) {
@@ -170,10 +170,5 @@ internal class InstreamAdsHelper(
         override fun onInstreamAdPrepared() {
             emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_PREPARED)
         }
-    }
-
-    companion object {
-        private const val ERROR_MANUAL_SHOW =
-            "Error. The ad going to be showed automatically after load!"
     }
 }

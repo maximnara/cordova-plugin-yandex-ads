@@ -28,6 +28,7 @@ import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_RELOAD_BANNER
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_RUN
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SET_USER_CONSENT
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_INSTREAM_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_INTERSTITIAL
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_OPEN_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_REWARDED_VIDEO
@@ -79,7 +80,8 @@ class YandexAdsPlugin : CordovaPlugin() {
 
             // Instream ads
             ACTION_LOAD_INSTREAM_APP_ADS -> { instreamAdsHelper?.load(callbackContext); true }
-            ACTION_HIDE_INSTREAM_APP_ADS -> { instreamAdsHelper?.hide(); true }
+            ACTION_SHOW_INSTREAM_APP_ADS -> { instreamAdsHelper?.show(callbackContext); true }
+            ACTION_HIDE_INSTREAM_APP_ADS -> { instreamAdsHelper?.hide(callbackContext); true }
 
             // Unknown
             else -> false
