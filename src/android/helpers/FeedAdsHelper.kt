@@ -17,13 +17,14 @@ import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaWebView
 
-internal class FeedHelper(
+internal class FeedAdsHelper(
     cordovaPlugin: CordovaPlugin,
     cordovaWebView: CordovaWebView,
     blockId: String
-): BaseAdsHelper<Unit>(cordovaPlugin, cordovaWebView, blockId) {
+) : BaseAdsHelper<Unit>(cordovaPlugin, cordovaWebView, blockId) {
     private var feedAd: FeedAd? = null
     private var feedAdAdapter: FeedAdAdapter? = null
+    private var recyclerView: RecyclerView? = null
 
     override fun getLoader() = null
     override fun load(callbackContext: CallbackContext) {
@@ -34,26 +35,36 @@ internal class FeedHelper(
         )
         val feedAdRequestConfiguration = FeedAdRequestConfiguration.Builder(blockId).build()
 
-        feedAd = FeedAd.Builder(cordova.context, feedAdRequestConfiguration, feedAdAppearance).build()
+        feedAd =
+            FeedAd.Builder(cordova.context, feedAdRequestConfiguration, feedAdAppearance).build()
         feedAd?.loadListener = getAdLoadListener()
         feedAd?.preloadAd()
 
-        cordova.activity.runOnUiThread {
-            callbackContext.success()
-        }
+        callbackContext.success()
     }
 
     override fun show(callbackContext: CallbackContext) {
         feedAdAdapter = feedAd?.let { FeedAdAdapter(it) }
         feedAdAdapter?.eventListener = getAdEventListener()
 
-        (cordovaWebView.view as? ViewGroup)?.addView(feedAdAdapter?.let { getRecyclerView(it) })
         cordova.activity.runOnUiThread {
-            callbackContext.success()
+            (cordovaWebView.view as? ViewGroup)?.addView(feedAdAdapter?.let { adapter ->
+                getRecyclerView(adapter).also { recyclerView = it }
+            })
+        }
+        callbackContext.success()
+    }
+
+    fun hide(callbackContext: CallbackContext) {
+        cordova.activity.runOnUiThread {
+            (cordovaWebView.view as? ViewGroup)?.removeView(recyclerView)
+            recyclerView = null
+            feedAdAdapter = null
+            feedAd = null
         }
     }
 
-    private fun getAdLoadListener() = object: FeedAdLoadListener {
+    private fun getAdLoadListener() = object : FeedAdLoadListener {
         override fun onAdFailedToLoad(error: AdRequestError) {
             emitWindowEvent(ConstantsEvents.EVENT_FEED_FAILED_TO_LOAD, error.description)
         }
@@ -63,7 +74,7 @@ internal class FeedHelper(
         }
     }
 
-    private fun getAdEventListener() = object: FeedAdEventListener {
+    private fun getAdEventListener() = object : FeedAdEventListener {
         override fun onAdClicked() {
             emitWindowEvent(ConstantsEvents.EVENT_FEED_CLICKED)
         }
@@ -79,7 +90,10 @@ internal class FeedHelper(
 
     private fun getRecyclerView(adapter: FeedAdAdapter): RecyclerView {
         return RecyclerView(cordova.context).apply {
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             layoutManager = LinearLayoutManager(context)
             this.adapter = adapter
         }

@@ -39,6 +39,11 @@ internal object ConstantsActions {
     const val ACTION_LOAD_INSTREAM_APP_ADS = "loadInstream"
     const val ACTION_SHOW_INSTREAM_APP_ADS = "showInstream"
     const val ACTION_HIDE_INSTREAM_APP_ADS = "hideInstream"
+
+    // feed
+    const val ACTION_LOAD_FEED_APP_ADS = "loadFeed"
+    const val ACTION_SHOW_FEED_APP_ADS = "showFeed"
+    const val ACTION_HIDE_FEED_APP_ADS = "hideFeed"
 }
 
 internal object ConstantsEvents {

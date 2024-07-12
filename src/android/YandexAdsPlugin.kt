@@ -7,6 +7,7 @@ import com.yandex.mobile.ads.common.InitializationListener
 import com.yandex.mobile.ads.common.MobileAds.initialize
 import com.yandex.mobile.ads.common.MobileAds.setUserConsent
 import io.luzh.cordova.plugin.helpers.BannerAdsHelper
+import io.luzh.cordova.plugin.helpers.FeedAdsHelper
 import io.luzh.cordova.plugin.helpers.InterstitialAdsHelper
 import io.luzh.cordova.plugin.helpers.OpenAppAdsHelper
 import io.luzh.cordova.plugin.helpers.RewardedAdsHelper
@@ -19,8 +20,10 @@ import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_INTERSTITIAL
 import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_OPEN_APP
 import io.luzh.cordova.plugin.utils.Constants.KEY_OPTIONS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_FEED_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_INSTREAM_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_FEED_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_INSTREAM_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_INTERSTITIAL
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_LOAD_OPEN_APP_ADS
@@ -28,6 +31,7 @@ import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_RELOAD_BANNER
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_RUN
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SET_USER_CONSENT
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_BANNER
+import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_FEED_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_INSTREAM_APP_ADS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_INTERSTITIAL
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_SHOW_OPEN_APP_ADS
@@ -48,6 +52,7 @@ class YandexAdsPlugin : CordovaPlugin() {
     private var interstitialAdsHelper: InterstitialAdsHelper? = null
     private var openAppAdsHelper: OpenAppAdsHelper? = null
     private var instreamAdsHelper: InstreamAdsHelper? = null
+    private var feedAdsHelper: FeedAdsHelper? = null
 
     @Throws(JSONException::class)
     override fun execute(
@@ -83,6 +88,11 @@ class YandexAdsPlugin : CordovaPlugin() {
             ACTION_SHOW_INSTREAM_APP_ADS -> { instreamAdsHelper?.show(callbackContext); true }
             ACTION_HIDE_INSTREAM_APP_ADS -> { instreamAdsHelper?.hide(callbackContext); true }
 
+            // Feed
+            ACTION_LOAD_FEED_APP_ADS -> { feedAdsHelper?.load(callbackContext); true }
+            ACTION_SHOW_FEED_APP_ADS -> { feedAdsHelper?.show(callbackContext); true }
+            ACTION_HIDE_FEED_APP_ADS -> { feedAdsHelper?.hide(callbackContext); true }
+
             // Unknown
             else -> false
         }
@@ -114,6 +124,7 @@ class YandexAdsPlugin : CordovaPlugin() {
         val bannerBlockId: String = args.getString(KEY_BLOCK_ID_BANNER)
         val openAppBlockId: String = args.getString(KEY_BLOCK_ID_OPEN_APP)
         val instreamBlockId: String = "demo-instream-vmap-yandex"
+        val feedBlockId: String = "demo-feed-yandex"
 //        val instreamBlockId: String = "R-V-5486136-1"
         val options = args.optJSONObject(KEY_OPTIONS)
 
@@ -128,6 +139,7 @@ class YandexAdsPlugin : CordovaPlugin() {
         interstitialAdsHelper = InterstitialAdsHelper(this, webView, interstitialBlockId)
         openAppAdsHelper = OpenAppAdsHelper(this, webView, openAppBlockId)
         instreamAdsHelper = InstreamAdsHelper(this, webView, instreamBlockId, intreamContentUrl)
+        feedAdsHelper = FeedAdsHelper(this, webView, feedBlockId)
 
 
         initialize(
