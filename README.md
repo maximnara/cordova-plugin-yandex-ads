@@ -19,7 +19,8 @@
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Interstitial%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Banner%20Support&style=flat-square">
 - [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=App%20Open%20Ads%20Support&style=flat-square">
-- [ ] <img src="https://img.shields.io/badge/-In%20Development-yellow.svg?label=Instream%20Support&style=flat-square">
+- [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Instream%20Support&style=flat-square">
+- [x] <img src="https://img.shields.io/badge/-Complete-brightgreen.svg?label=Feed%20Support&style=flat-square">
 
 -------- 
 
@@ -48,6 +49,12 @@ npm i cordova-plugin-yandex-ads --save
   - [Show Banner](#show-banner)
   - [Reload Banner](#reload-banner)
   - [Banner Events](#banner-events)
+- [Instream](#instream)
+  - [Load Instream](#load-instream)
+  - [Show Instream](#show-instream)
+- [Feed](#feed)
+  - [Load Feed](#load-feed)
+  - [Show Feed](#show-feed)
   
   
 All methods support optional `onSuccess` and `onFailure` parameters
@@ -61,6 +68,8 @@ await YandexAds.init({
   interstitialBlockId: 'YOUR_INTERSTITIAL_ID',
   bannerBlockId: 'YOOUR_BANNER_ID',
   openAppBlockId: 'YOUR_OPEN_APP_ADS_ID',
+  instreamBlockId: 'YOUR_INSTREAM_ID',
+  feedBlockId: 'YOUR_FEED_ID',
   options: { // This is for banner ads
     bannerAtTop: true, // Show banner on top of screen, otherwise on bottom
     bannerSize: { width: 468, height: 100 }, // Your banner size
@@ -164,6 +173,48 @@ YandexAds.reloadBanner();
 YandexAds.hideBanner();
 ```
 ***
+### Instream
+Instream works only for android for now.
+It depends on video, so fo that we created empty video. Best works for TV. 
+
+#### Load instream
+```javascript
+YandexAds.loadInstream();
+```
+***
+
+#### Show instream
+```javascript
+YandexAds.showInstream();
+```
+***
+
+#### Hide instream
+```javascript
+YandexAds.hideInstream();
+```
+***
+
+### Feed
+This works only for android for now. It is feed with advertising cards with infinity scroll.
+
+#### Load feed
+```javascript
+YandexAds.loadFeed();
+```
+***
+
+#### Show feed
+```javascript
+YandexAds.showFeed();
+```
+***
+
+#### Hide feed
+```javascript
+YandexAds.hideFeed();
+```
+***
 
 ### Events
 
@@ -204,6 +255,19 @@ Also you can find them [here](www/yandexads.js)
     clicked: 'bannerDidClick',
     impression: 'bannerDidTrackImpressionWith',
     leftApplication: 'bannerWillLeaveApplication',
+  },
+  feed: {
+    loaded: 'feedDidLoad',
+    failedToLoad: 'feedFailedToLoad',
+    clicked: 'feedDidClick',
+    impression: 'feedDidTrackImpressionWith',
+  },
+  instream: {
+    loaded: 'instreamDidLoad',
+    failedToLoad: 'instreamFailedToLoad',
+    error: 'instreamError',
+    completed: 'instreamAdCompleted',
+    prepared: 'instreamAdPrepared',
   }
 }
 ```
