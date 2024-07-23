@@ -9,7 +9,8 @@ cdvPluginPostBuildExtras.add({
 
     dependencies {
         implementation fileTree(dir: 'libs', include: ['*.jar'])
-        implementation 'com.yandex.android:mobileads:6.2.0'
+        implementation 'com.yandex.android:mobileads:7.0.0'
+        implementation 'com.google.android.exoplayer:exoplayer:2.18.1'
 //         implementation 'com.yandex.android:mobmetricalib:5.2.0'
 //
 //         implementation 'com.yandex.ads.mediation:mobileads-mytarget:5.15.0.0'
