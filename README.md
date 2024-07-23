@@ -52,9 +52,11 @@ npm i cordova-plugin-yandex-ads --save
 - [Instream](#instream)
   - [Load Instream](#load-instream)
   - [Show Instream](#show-instream)
+  - [Hide Instream](#hide-instream)
 - [Feed](#feed)
   - [Load Feed](#load-feed)
   - [Show Feed](#show-feed)
+  - [Hide Feed](#hide-feed)
   
   
 All methods support optional `onSuccess` and `onFailure` parameters
