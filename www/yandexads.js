@@ -38,6 +38,19 @@ let YandexAds = (function () {
                 impression: 'bannerDidTrackImpressionWith',
                 leftApplication: 'bannerWillLeaveApplication',
             },
+            feed: {
+                loaded: 'feedDidLoad',
+                failedToLoad: 'feedFailedToLoad',
+                clicked: 'feedDidClick',
+                impression: 'feedDidTrackImpressionWith',
+            },
+            instream: {
+                loaded: 'instreamDidLoad',
+                failedToLoad: 'instreamFailedToLoad',
+                error: 'instreamError',
+                completed: 'instreamAdCompleted',
+                prepared: 'instreamAdPrepared',
+            },
         },
 
         /**
@@ -62,14 +75,24 @@ let YandexAds = (function () {
                     throw new Error('YandexAds::init - rewardedBlockId or interstitialBlockId or bannerBlockId is required');
                 }
 
-                callPlugin('run', [params.rewardedBlockId, params.interstitialBlockId, params.bannerBlockId, params.openAppBlockId, params.options || {}], function ()
-                {
-
+                callPlugin(
+             'run',
+            [
+                        params.rewardedBlockId,
+                        params.interstitialBlockId,
+                        params.bannerBlockId,
+                        params.openAppBlockId,
+                        params.instreamBlockId,
+                        params.feedBlockId,
+                        params.options || {},
+                    ],
+                    function () {
                     initialized = true;
 
                     resolve();
-
-                }, reject);
+                    },
+                    reject
+                );
             });
         },
 
@@ -249,6 +272,51 @@ let YandexAds = (function () {
                 params = defaults(params, {});
 
                 callPlugin('hideInstream', [], resolve, reject);
+            });
+        },
+
+        /**
+         * Loads feed ads
+         * @param {String} params.placement - optional placement name
+         * @param {Function} params.onSuccess - optional on success callback
+         * @param {Function} param.onFailure - optional on failure callback
+         */
+        loadFeed: function loadInstream(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('loadFeed', [], resolve, reject);
+            });
+        },
+
+        /**
+         * Show feed ads
+         * @param {String} params.placement - optional placement name
+         * @param {Function} params.onSuccess - optional on success callback
+         * @param {Function} param.onFailure - optional on failure callback
+         */
+        showFeed: function showInstream(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('showFeed', [], resolve, reject);
+            });
+        },
+
+        /**
+         * Hide feed ads
+         * @param {String} params.placement - optional placement name
+         * @param {Function} params.onSuccess - optional on success callback
+         * @param {Function} param.onFailure - optional on failure callback
+         */
+        hideFeed: function hideInstream(params)
+        {
+            return new Promise((resolve, reject) => {
+                params = defaults(params, {});
+
+                callPlugin('hideFeed', [], resolve, reject);
             });
         },
 

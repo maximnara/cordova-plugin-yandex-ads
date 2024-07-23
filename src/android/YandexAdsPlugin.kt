@@ -16,8 +16,11 @@ import io.luzh.cordova.plugin.utils.Constants
 import io.luzh.cordova.plugin.utils.Constants.KEY_BANNER_AT_TOP
 import io.luzh.cordova.plugin.utils.Constants.KEY_BANNER_SIZE
 import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_BANNER
+import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_FEED
+import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_INSTREAM
 import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_INTERSTITIAL
 import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_OPEN_APP
+import io.luzh.cordova.plugin.utils.Constants.KEY_BLOCK_ID_REWARDED
 import io.luzh.cordova.plugin.utils.Constants.KEY_OPTIONS
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_BANNER
 import io.luzh.cordova.plugin.utils.ConstantsActions.ACTION_HIDE_FEED_APP_ADS
@@ -119,19 +122,17 @@ class YandexAdsPlugin : CordovaPlugin() {
      */
     private fun initAction(args: JSONArray, callbackContext: CallbackContext) {
         val webView = cordovaWebView ?: return
-        val rewardedBlockId: String = args.getString(KEY_BLOCK_ID_INTERSTITIAL)
+        val rewardedBlockId: String = args.getString(KEY_BLOCK_ID_REWARDED)
         val interstitialBlockId: String = args.getString(KEY_BLOCK_ID_INTERSTITIAL)
         val bannerBlockId: String = args.getString(KEY_BLOCK_ID_BANNER)
         val openAppBlockId: String = args.getString(KEY_BLOCK_ID_OPEN_APP)
-        val instreamBlockId: String = "demo-instream-vmap-yandex"
-        val feedBlockId: String = "demo-feed-yandex"
-//        val instreamBlockId: String = "R-V-5486136-1"
+        val instreamBlockId: String = args.getString(KEY_BLOCK_ID_INSTREAM)
+        val feedBlockId: String = args.getString(KEY_BLOCK_ID_FEED)
         val options = args.optJSONObject(KEY_OPTIONS)
 
         val bannerAtTop = options.optBoolean(KEY_BANNER_AT_TOP, false)
         val bannerSize = options.optJSONObject(KEY_BANNER_SIZE)
 
-        // исправь меня
         val intreamContentUrl = Uri.parse("android.resource://" + cordova.context.packageName + "/" + R.raw.jc).toString()
 
         bannerAdsHelper = BannerAdsHelper(this, webView, bannerBlockId, bannerAtTop, bannerSize)

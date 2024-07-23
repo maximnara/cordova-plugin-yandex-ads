@@ -7,7 +7,9 @@ internal object Constants {
     const val KEY_BLOCK_ID_INTERSTITIAL = 1
     const val KEY_BLOCK_ID_BANNER = 2
     const val KEY_BLOCK_ID_OPEN_APP = 3
-    const val KEY_OPTIONS = 4
+    const val KEY_BLOCK_ID_INSTREAM = 4
+    const val KEY_BLOCK_ID_FEED = 5
+    const val KEY_OPTIONS = 6
     const val KEY_BANNER_AT_TOP = "bannerAtTop"
     const val KEY_BANNER_SIZE = "bannerSize"
 }
@@ -92,6 +94,6 @@ internal object ConstantsEvents {
     const val EVENT_INSTREAM_LOADED = "instreamDidLoad"
     const val EVENT_INSTREAM_FAILED_TO_LOAD = "instreamFailedToLoad"
     const val EVENT_INSTREAM_ERROR = "instreamError"
-    const val EVENT_INSTREAM_AD_COMPLEATED = "instreamAdCompleated"
+    const val EVENT_INSTREAM_AD_COMPLEATED = "instreamAdCompleted"
     const val EVENT_INSTREAM_AD_PREPARED = "instreamAdPrepared"
 }
