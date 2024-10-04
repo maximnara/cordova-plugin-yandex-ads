@@ -11,7 +11,7 @@ extension YandexAdsPlugin {
             return;
         }
 
-        let configuration = YMAAdRequestConfiguration(adUnitID: self.rewardedBlockId!)
+        let configuration = AdRequestConfiguration(adUnitID: self.rewardedBlockId!)
         self.rewardedAdLoader.loadAd(with: configuration)
 
         self.sendResult(command: command);
@@ -30,16 +30,16 @@ extension YandexAdsPlugin {
     }
 }
 
-// MARK: - YMARewardedAdLoaderDelegate
-extension YandexAdsPlugin: YMARewardedAdLoaderDelegate {
-    func rewardedAdLoader(_ adLoader: YMARewardedAdLoader, didLoad rewardedAd: YMARewardedAd) {
+// MARK: - RewardedAdLoaderDelegate
+extension YandexAdsPlugin: RewardedAdLoaderDelegate {
+    func rewardedAdLoader(_ adLoader: RewardedAdLoader, didLoad rewardedAd: RewardedAd) {
         self.rewardedAd = rewardedAd
         self.rewardedAd?.delegate = self
         
         self.emitWindowEvent(event: EVENT_REWARDED_DID_LOAD)
     }
 
-    func rewardedAdLoader(_ adLoader: YMARewardedAdLoader, didFailToLoadWithError error: YMAAdRequestError) {
+    func rewardedAdLoader(_ adLoader: RewardedAdLoader, didFailToLoadWithError error: AdRequestError) {
         let id = error.adUnitId
         let error = error.error
         
@@ -55,30 +55,30 @@ let EVENT_REWARDED_DID_DISMISS = "rewardedDidDismiss"
 let EVENT_REWARDED_DID_CLICK = "rewardedDidClick"
 let EVENT_REWARDED_DID_TRACK_IMPRESSION_WITH = "rewardedDidTrackImpressionWith"
 
-// MARK: - YMARewardedAdDelegate\
-extension YandexAdsPlugin: YMARewardedAdDelegate {
-    func rewardedAd(_ rewardedAd: YMARewardedAd, didReward reward: YMAReward) {
+// MARK: - RewardedAdDelegate\
+extension YandexAdsPlugin: RewardedAdDelegate {
+    func rewardedAd(_ rewardedAd: RewardedAd, didReward reward: Reward) {
         self.emitWindowEvent(event: EVENT_REWARDED_DID_REWARD)
     }
 
-    func rewardedAd(_ rewardedAd: YMARewardedAd, didFailToShowWithError error: Error) {
+    func rewardedAd(_ rewardedAd: RewardedAd, didFailToShowWithError error: Error) {
         let data = ErrorData(message: error.localizedDescription)
         self.emitWindowEvent(event: EVENT_REWARDED_DID_FAIL_TO_SHOW_WITH_ERROR, data: data)
     }
 
-    func rewardedAdDidShow(_ rewardedAd: YMARewardedAd) {
+    func rewardedAdDidShow(_ rewardedAd: RewardedAd) {
         self.emitWindowEvent(event: EVENT_REWARDED_DID_SHOW)
     }
 
-    func rewardedAdDidDismiss(_ rewardedAd: YMARewardedAd) {
+    func rewardedAdDidDismiss(_ rewardedAd: RewardedAd) {
         self.emitWindowEvent(event: EVENT_REWARDED_DID_DISMISS)
     }
 
-    func rewardedAdDidClick(_ rewardedAd: YMARewardedAd) {
+    func rewardedAdDidClick(_ rewardedAd: RewardedAd) {
         self.emitWindowEvent(event: EVENT_REWARDED_DID_CLICK)
     }
 
-    func rewardedAd(_ rewardedAd: YMARewardedAd, didTrackImpressionWith impressionData: YMAImpressionData?) {
+    func rewardedAd(_ rewardedAd: RewardedAd, didTrackImpressionWith impressionData: ImpressionData?) {
         self.emitWindowEvent(event: EVENT_REWARDED_DID_TRACK_IMPRESSION_WITH)
     }
 }

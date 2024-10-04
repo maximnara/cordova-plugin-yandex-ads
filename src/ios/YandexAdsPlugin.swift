@@ -13,14 +13,16 @@ class YandexAdsPlugin: CDVPlugin {
     public var interstitialBlockId: String?
     public var bannerBlockId: String?
     public var openAppBlockId: String?
+    public var instreamBlockId: String?
+    public var feedBlockId: String?
 
     public var bannerAtTop: Bool?
     public var bannerSize: NSDictionary?
 
-    public var interstitialAd: YMAInterstitialAd?
-    public var rewardedAd: YMARewardedAd?
-    public var appOpenAd: YMAAppOpenAd?
-    public var bannerAdViewCache: YMAAdView?
+    public var interstitialAd: InterstitialAd?
+    public var rewardedAd: RewardedAd?
+    public var appOpenAd: AppOpenAd?
+    public var bannerAdViewCache: AdView?
 
     public var superView: UIView?
     public var stackViewInlineBannerView: UIStackView?
@@ -46,8 +48,10 @@ class YandexAdsPlugin: CDVPlugin {
         self.interstitialBlockId = command.arguments[1] as? String ?? ""
         self.bannerBlockId = command.arguments[2] as? String ?? ""
         self.openAppBlockId = command.arguments[3] as? String ?? ""
+        self.instreamBlockId = command.arguments[4] as? String ?? ""
+        self.feedBlockId = command.arguments[5] as? String ?? ""
 
-        let options = command.arguments[4] as! NSDictionary;
+        let options = command.arguments[6] as! NSDictionary;
 
         self.bannerAtTop = options["bannerAtTop"] as? Bool;
 
@@ -56,24 +60,24 @@ class YandexAdsPlugin: CDVPlugin {
         self.sendResult(command: command);
     }
 
-    public lazy var interstitialAdLoader: YMAInterstitialAdLoader = {
-        let loader = YMAInterstitialAdLoader()
+    public lazy var interstitialAdLoader: InterstitialAdLoader = {
+        let loader = InterstitialAdLoader()
 
         loader.delegate = self
 
         return loader
     }()
 
-    public lazy var rewardedAdLoader: YMARewardedAdLoader = {
-        let loader = YMARewardedAdLoader()
+    public lazy var rewardedAdLoader: RewardedAdLoader = {
+        let loader = RewardedAdLoader()
 
         loader.delegate = self
 
         return loader
     }()
 
-    public lazy var appOpenAdLoader: YMAAppOpenAdLoader = {
-        let loader = YMAAppOpenAdLoader()
+    public lazy var appOpenAdLoader: AppOpenAdLoader = {
+        let loader = AppOpenAdLoader()
 
         loader.delegate = self
 
@@ -82,7 +86,7 @@ class YandexAdsPlugin: CDVPlugin {
 
     @objc(setUserConsent:)
     func setUserConsent(command: CDVInvokedUrlCommand) {
-        YMAMobileAds.setUserConsent(command.arguments[0] as? Bool ?? false);
+        MobileAds.setUserConsent(command.arguments[0] as? Bool ?? false);
 
         self.sendResult(command: command);
     }

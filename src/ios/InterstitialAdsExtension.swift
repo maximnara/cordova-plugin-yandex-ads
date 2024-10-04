@@ -11,7 +11,7 @@ extension YandexAdsPlugin {
             return;
         }
 
-        let configuration = YMAAdRequestConfiguration(adUnitID: self.interstitialBlockId!)
+        let configuration = AdRequestConfiguration(adUnitID: self.interstitialBlockId!)
         self.interstitialAdLoader.loadAd(with: configuration)
 
         self.sendResult(command: command);
@@ -30,15 +30,15 @@ extension YandexAdsPlugin {
     }
 }
 
-extension YandexAdsPlugin: YMAInterstitialAdLoaderDelegate {
-    func interstitialAdLoader(_ adLoader: YMAInterstitialAdLoader, didLoad interstitialAd: YMAInterstitialAd) {
+extension YandexAdsPlugin: InterstitialAdLoaderDelegate {
+    func interstitialAdLoader(_ adLoader: InterstitialAdLoader, didLoad interstitialAd: InterstitialAd) {
         self.interstitialAd = interstitialAd
         self.interstitialAd?.delegate = self
         
         self.emitWindowEvent(event: EVENT_INTERSTITIAL_DID_LOAD)
     }
 
-    func interstitialAdLoader(_ adLoader: YMAInterstitialAdLoader, didFailToLoadWithError error: YMAAdRequestError) {
+    func interstitialAdLoader(_ adLoader: InterstitialAdLoader, didFailToLoadWithError error: AdRequestError) {
         let id = error.adUnitId
         let error = error.error
         
@@ -53,25 +53,25 @@ let EVENT_INTERSTITIAL_DID_DISMISS = "interstitialDidDismiss"
 let EVENT_INTERSTITIAL_DID_CLICK = "interstitialDidClick"
 let EVENT_INTERSTITIAL_DID_TRACK_IMPRESSION_WITH = "interstitialDidTrackImpressionWith"
 
-extension YandexAdsPlugin: YMAInterstitialAdDelegate {
-    func interstitialAd(_ interstitialAd: YMAInterstitialAd, didFailToShowWithError error: Error) {
+extension YandexAdsPlugin: InterstitialAdDelegate {
+    func interstitialAd(_ interstitialAd: InterstitialAd, didFailToShowWithError error: Error) {
         let data = ErrorData(message: error.localizedDescription)
         self.emitWindowEvent(event: EVENT_INTERSTITIAL_DID_FAIL_TO_SHOW_WITH_ERROR, data: data)
     }
 
-    func interstitialAdDidShow(_ interstitialAd: YMAInterstitialAd) {
+    func interstitialAdDidShow(_ interstitialAd: InterstitialAd) {
         self.emitWindowEvent(event: EVENT_INTERSTITIAL_DID_SHOW)
     }
 
-    func interstitialAdDidDismiss(_ interstitialAd: YMAInterstitialAd) {
+    func interstitialAdDidDismiss(_ interstitialAd: InterstitialAd) {
         self.emitWindowEvent(event: EVENT_INTERSTITIAL_DID_DISMISS)
     }
 
-    func interstitialAdDidClick(_ interstitialAd: YMAInterstitialAd) {
+    func interstitialAdDidClick(_ interstitialAd: InterstitialAd) {
         self.emitWindowEvent(event: EVENT_INTERSTITIAL_DID_CLICK)
     }
 
-    func interstitialAd(_ interstitialAd: YMAInterstitialAd, didTrackImpressionWith impressionData: YMAImpressionData?) {
+    func interstitialAd(_ interstitialAd: InterstitialAd, didTrackImpressionWith impressionData: ImpressionData?) {
         self.emitWindowEvent(event: EVENT_INTERSTITIAL_DID_TRACK_IMPRESSION_WITH)
     }
 }

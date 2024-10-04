@@ -14,7 +14,7 @@ extension YandexAdsPlugin {
             return;
         }
 
-        let configuration = YMAAdRequestConfiguration(adUnitID: self.openAppBlockId!)
+        let configuration = AdRequestConfiguration(adUnitID: self.openAppBlockId!)
         appOpenAdLoader.loadAd(with: configuration)
 
         self.sendResult(command: command);
@@ -33,9 +33,9 @@ extension YandexAdsPlugin {
     }
 }
 
-// MARK: - YMAAppOpenAdDelegate
-extension YandexAdsPlugin: YMAAppOpenAdDelegate {
-    func appOpenAdDidDismiss(_ appOpenAd: YMAAppOpenAd) {
+// MARK: - AppOpenAdDelegate
+extension YandexAdsPlugin: AppOpenAdDelegate {
+    func appOpenAdDidDismiss(_ appOpenAd: AppOpenAd) {
         self.appOpenAd?.delegate = nil
         self.appOpenAd = nil
 
@@ -43,7 +43,7 @@ extension YandexAdsPlugin: YMAAppOpenAdDelegate {
     }
 
     func appOpenAd(
-        _ appOpenAd: YMAAppOpenAd,
+        _ appOpenAd: AppOpenAd,
         didFailToShowWithError error: Error
     ) {
         self.appOpenAd = nil
@@ -52,15 +52,15 @@ extension YandexAdsPlugin: YMAAppOpenAdDelegate {
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_FAIL_TO_SHOW_WITH_ERROR, data: data)
     }
 
-    func appOpenAdDidShow(_ appOpenAd: YMAAppOpenAd) {
+    func appOpenAdDidShow(_ appOpenAd: AppOpenAd) {
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_SHOW)
     }
 
-    func appOpenAdDidClick(_ appOpenAd: YMAAppOpenAd) {
+    func appOpenAdDidClick(_ appOpenAd: AppOpenAd) {
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_CLICK)
     }
 
-    func appOpenAd(_ appOpenAd: YMAAppOpenAd, didTrackImpressionWith impressionData: YMAImpressionData?) {
+    func appOpenAd(_ appOpenAd: AppOpenAd, didTrackImpressionWith impressionData: ImpressionData?) {
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_TRACK_IMPRESSION_WITH)
     }
 }
@@ -68,11 +68,11 @@ extension YandexAdsPlugin: YMAAppOpenAdDelegate {
 let EVENT_APP_OPEN_DID_LOAD = "appOpenDidLoad"
 let EVENT_APP_OPEN_FAILED_TO_LOAD = "appOpenFailedToLoad"
 
-// MARK: - YMAAppOpenAdLoaderDelegate
-extension YandexAdsPlugin: YMAAppOpenAdLoaderDelegate {
+// MARK: - AppOpenAdLoaderDelegate
+extension YandexAdsPlugin: AppOpenAdLoaderDelegate {
     func appOpenAdLoader(
-        _ adLoader: YMAAppOpenAdLoader,
-        didLoad appOpenAd: YMAAppOpenAd
+        _ adLoader: AppOpenAdLoader,
+        didLoad appOpenAd: AppOpenAd
     ) {
         self.appOpenAd = appOpenAd
         self.appOpenAd?.delegate = self
@@ -81,8 +81,8 @@ extension YandexAdsPlugin: YMAAppOpenAdLoaderDelegate {
     }
 
     func appOpenAdLoader(
-        _ adLoader: YMAAppOpenAdLoader,
-        didFailToLoadWithError error: YMAAdRequestError
+        _ adLoader: AppOpenAdLoader,
+        didFailToLoadWithError error: AdRequestError
     ) {
         self.appOpenAd = nil
         let id = error.adUnitId

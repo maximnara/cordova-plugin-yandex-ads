@@ -9,19 +9,19 @@ let EVENT_BANNER_WILL_SHOW = "bannerWillShow"
 let EVENT_BANNER_DID_DISMISS = "bannerDidDismiss"
 
 extension YandexAdsPlugin {
-    func getBannerAdView() -> YMAAdView {
+    func getBannerAdView() -> AdView {
         if self.bannerAdViewCache != nil {
             return self.bannerAdViewCache!
         }
 
         let width = self.webView.safeAreaLayoutGuide.layoutFrame.width
-        var adSize = YMABannerAdSize.stickySize(withContainerWidth: width)
+        var adSize = BannerAdSize.stickySize(withContainerWidth: width)
 
         if (self.bannerSize != nil && self.bannerSize?["width"] != nil && self.bannerSize?["height"] != nil) {
-            adSize = YMABannerAdSize.inlineSize(withWidth: self.bannerSize?["width"] as! CGFloat, maxHeight: self.bannerSize?["height"] as! CGFloat)
+            adSize = BannerAdSize.inlineSize(withWidth: self.bannerSize?["width"] as! CGFloat, maxHeight: self.bannerSize?["height"] as! CGFloat)
         }
 
-        let adView = YMAAdView(adUnitID: self.bannerBlockId!, adSize: adSize)
+        let adView = AdView(adUnitID: self.bannerBlockId!, adSize: adSize)
 
         adView.delegate = self
 
@@ -94,7 +94,7 @@ extension YandexAdsPlugin {
         self.sendResult(command: command);
     }
 
-    func showOverlapBanner(banner: YMAAdView) {
+    func showOverlapBanner(banner: AdView) {
         if self.bannerAtTop != nil && self.bannerAtTop == true {
             banner.displayAtTop(in: webView)
         } else {
@@ -102,7 +102,7 @@ extension YandexAdsPlugin {
         }
     }
 
-    func showInlineBanner(banner: YMAAdView) {
+    func showInlineBanner(banner: AdView) {
         let stackview: UIStackView = {
             let view = UIStackView()
             view.axis = .vertical
@@ -171,36 +171,36 @@ extension YandexAdsPlugin {
     }
 }
 
-extension YandexAdsPlugin: YMAAdViewDelegate {
-    func adViewDidLoad(_ adView: YMAAdView) {
+extension YandexAdsPlugin: AdViewDelegate {
+    func adViewDidLoad(_ adView: AdView) {
         if (self.bannerReloaded == nil || self.bannerReloaded == false) {
             self.emitWindowEvent(event: EVENT_BANNER_DID_LOAD)
         }
         self.bannerReloaded = false
     }
 
-    func adViewDidClick(_ adView: YMAAdView) {
+    func adViewDidClick(_ adView: AdView) {
         self.emitWindowEvent(event: EVENT_BANNER_DID_CLICK)
     }
 
-    func adView(_ adView: YMAAdView, didTrackImpressionWith impressionData: YMAImpressionData?) {
+    func adView(_ adView: AdView, didTrackImpression impressionData: ImpressionData?) {
         self.emitWindowEvent(event: EVENT_BANNER_DID_TRACK_IMPRESSION_WITH)
     }
 
-    func adViewDidFailLoading(_ adView: YMAAdView, error: Error) {
+    func adViewDidFailLoading(_ adView: AdView, error: Error) {
         let data = ErrorData(message: error.localizedDescription)
         self.emitWindowEvent(event: EVENT_BANNER_FAILED_TO_LOAD, data: data)
     }
 
-    func adViewWillLeaveApplication(_ adView: YMAAdView) {
+    func adViewWillLeaveApplication(_ adView: AdView) {
         self.emitWindowEvent(event: EVENT_BANNER_WILL_LEAVE_APPLICATION)
     }
 
-    func adView(_ adView: YMAAdView, willPresentScreen viewController: UIViewController?) {
+    func adView(_ adView: AdView, willPresentScreen viewController: UIViewController?) {
         self.emitWindowEvent(event: EVENT_BANNER_WILL_SHOW)
     }
 
-    func adView(_ adView: YMAAdView, didDismissScreen viewController: UIViewController?) {
+    func adView(_ adView: AdView, didDismissScreen viewController: UIViewController?) {
         self.emitWindowEvent(event: EVENT_BANNER_DID_DISMISS)
     }
 }

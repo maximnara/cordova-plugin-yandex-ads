@@ -44,9 +44,9 @@ extension YandexAdsPlugin {
     public func emitWindowEvent(event: String, data: Encodable) {
         do {
             struct emptyObj: Encodable {}
-            let encodedData = try JSONEncoder().encode(data)
+            let _encodedData = try JSONEncoder().encode(data)
                 
-            let js = "cordova.fireWindowEvent('\(event)', '\(data)')"
+            let js = "cordova.fireWindowEvent('\(event)', '\(_encodedData)')"
             
             self.commandDelegate.evalJs(js)
         } catch {
