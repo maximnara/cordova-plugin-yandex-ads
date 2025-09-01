@@ -1,8 +1,18 @@
 # Yandex Ads for Cordova apps
 [![NPM Downloads](https://img.shields.io/npm/dt/cordova-plugin-yandex-ads)](https://www.npmjs.com/package/cordova-plugin-yandex-ads) [![NPM Version](https://img.shields.io/npm/v/cordova-plugin-yandex-ads)](https://www.npmjs.com/package/cordova-plugin-yandex-ads)
 
+## ☕ Поддержать проект
+[![Поддержать на Boosty](https://img.shields.io/badge/Поддержать-Boosty-orange?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K)](https://boosty.to/maximnara/donate)
+
+**💝 Если проект помог вам в разработке, рассмотрите возможность поддержки разработчика:** [**boosty.to/maximnara/donate**](https://boosty.to/maximnara/donate)
+
+<p align="center">
+  <img src="maximnara-donate.png" alt="QR код для быстрого доната" width="200">
+  <br>
+  <em>QR код для быстрого доната</em>
+</p>
+
 --------
-## Support plugin [https://boosty.to/maximnara](https://boosty.to/maximnara)
 
 ## !! Attention, last stable version is 2.3.0
 
@@ -302,3 +312,25 @@ Please check official documentation in case of some breaking changes
 ```
 
 ### Feel free to make your PRs for code structure or new functions
+
+## ☕ Понравился проект?
+
+**🎯 Поддержите разработку новых функций и исправление багов:**
+
+[![Поддержать на Boosty](https://img.shields.io/badge/💝_Поддержать_разработчика-Boosty-ff6b35?style=for-the-badge&labelColor=2d2d2d)](https://boosty.to/maximnara/donate)
+
+<p align="center">
+  <img src="maximnara-donate.png" alt="QR код для быстрого доната" width="200">
+  <br>
+  <em>Сканируйте QR код для быстрого доната</em>
+</p>
+
+**Ваша поддержка помогает:**
+- 🚀 Добавлять новые функции
+- 🐛 Исправлять ошибки быстрее  
+- 📖 Улучшать документацию
+- 🎨 Развивать экосистему инструментов
+
+---
+
+**Cordova Plugin Yandex Ads** - делает интеграцию рекламы Яндекса простой и быстрой! 🚀
