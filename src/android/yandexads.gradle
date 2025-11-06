@@ -1,15 +1,15 @@
 cdvPluginPostBuildExtras.add({
     android {
       compileOptions {
-          sourceCompatibility JavaVersion.VERSION_1_8
-          targetCompatibility JavaVersion.VERSION_1_8
+          sourceCompatibility JavaVersion.VERSION_11
+          targetCompatibility JavaVersion.VERSION_11
       }
-      buildToolsVersion "33.0.2"
+      buildToolsVersion "35.0.0"
     }
 
     dependencies {
         implementation fileTree(dir: 'libs', include: ['*.jar'])
-        implementation 'com.yandex.android:mobileads:7.0.0'
+        implementation 'com.yandex.android:mobileads:7.16.0'
         implementation 'com.google.android.exoplayer:exoplayer:2.18.1'
 //         implementation 'com.yandex.android:mobmetricalib:5.2.0'
 //
