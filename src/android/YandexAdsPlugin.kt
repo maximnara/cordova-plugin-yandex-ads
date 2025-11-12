@@ -117,6 +117,13 @@ class YandexAdsPlugin : CordovaPlugin() {
     }
 
     /**
+     * Обработчик D-pad событий для навигации в рекламе
+     */
+    fun handleDpadEvent(keyCode: Int, event: android.view.KeyEvent): Boolean {
+        return instreamAdsHelper?.handleDpadEvent(keyCode, event) ?: false
+    }
+
+    /**
      * Intilization action Initializes Yandex Ads
      */
     private fun initAction(args: JSONArray, callbackContext: CallbackContext) {
