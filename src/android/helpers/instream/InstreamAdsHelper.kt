@@ -53,7 +53,20 @@ internal class InstreamAdsHelper(
 
     override fun show(callbackContext: CallbackContext) {
         cordova.activity.runOnUiThread {
-            val instreamAd = this.instreamAd ?: return@runOnUiThread
+            val instreamAd = this.instreamAd ?: run {
+                callbackContext.error("Instream ad not loaded")
+                return@runOnUiThread
+            }
+
+            val adPlayer = instreamAdPlayer ?: run {
+                callbackContext.error("Instream ad player not initialized")
+                return@runOnUiThread
+            }
+
+            val videoPlayer = contentVideoPlayer ?: run {
+                callbackContext.error("Content video player not initialized")
+                return@runOnUiThread
+            }
 
             (cordovaWebView.view as? ViewGroup)?.let { view ->
 
@@ -70,8 +83,8 @@ internal class InstreamAdsHelper(
             instreamAdBinder = InstreamAdBinder(
                 cordova.context,
                 instreamAd,
-                checkNotNull(instreamAdPlayer),
-                checkNotNull(contentVideoPlayer)
+                adPlayer,
+                videoPlayer
             ).apply {
                 setInstreamAdListener(eventLogger)
                 instreamAdView?.let {
