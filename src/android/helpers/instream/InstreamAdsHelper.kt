@@ -12,6 +12,9 @@ import com.yandex.mobile.ads.instream.InstreamAdLoadListener
 import com.yandex.mobile.ads.instream.InstreamAdLoader
 import com.yandex.mobile.ads.instream.InstreamAdRequestConfiguration
 import com.yandex.mobile.ads.instream.player.ad.InstreamAdView
+import com.yandex.mobile.ads.instream.player.ad.InstreamAdPlayerListener
+import com.yandex.mobile.ads.instream.player.ad.error.InstreamAdPlayerError
+import com.yandex.mobile.ads.video.playback.model.VideoAd
 import io.luzh.cordova.plugin.helpers.BaseAdsHelper
 import io.luzh.cordova.plugin.helpers.instream.ad.SampleInstreamAdPlayer
 import io.luzh.cordova.plugin.helpers.instream.content.ContentVideoPlayer
@@ -55,16 +58,19 @@ internal class InstreamAdsHelper(
         cordova.activity.runOnUiThread {
             val instreamAd = this.instreamAd ?: run {
                 callbackContext.error("Instream ad not loaded")
+                emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_ERROR, "Instream ad not loaded")
                 return@runOnUiThread
             }
 
             val adPlayer = instreamAdPlayer ?: run {
                 callbackContext.error("Instream ad player not initialized")
+                emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_ERROR, "Instream ad player not initialized")
                 return@runOnUiThread
             }
 
             val videoPlayer = contentVideoPlayer ?: run {
                 callbackContext.error("Content video player not initialized")
+                emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_ERROR, "Content video player not initialized")
                 return@runOnUiThread
             }
 
@@ -99,8 +105,6 @@ internal class InstreamAdsHelper(
      * Обработчик D-pad событий, вызывается из Activity
      */
     fun handleDpadEvent(keyCode: Int, event: KeyEvent): Boolean {
-//        if (!isInstreamAdShowing) return false
-
         Log.d("InstreamAdsHelper", "handleDpadEvent: keyCode=$keyCode, action=${event.action}")
 
         // Передаем событие напрямую в view с фокусом
@@ -139,16 +143,30 @@ internal class InstreamAdsHelper(
 
     fun hide(callbackContext: CallbackContext) {
         cordova.activity.runOnUiThread {
-            (cordovaWebView.view as? ViewGroup)?.let { view ->
-                view.removeView(instreamAdView)
-
-                view.isFocusable = true
-                view.requestFocus()
-
-                onDestroy()
-            }
-
+            hideAndCleanup()
             callbackContext.success()
+        }
+    }
+
+    private fun hideAndCleanup() {
+        (cordovaWebView.view as? ViewGroup)?.let { view ->
+            // Останавливаем плееры
+            instreamAdPlayer?.pause()
+            contentVideoPlayer?.pause()
+
+            // Очищаем playerView из плеера
+            playerView?.player = null
+
+            // Удаляем playerView из instreamAdView
+            instreamAdView?.removeView(playerView)
+
+            // Удаляем instreamAdView из родительского контейнера
+            view.removeView(instreamAdView)
+
+            view.isFocusable = true
+            view.requestFocus()
+
+            onDestroy()
         }
     }
 
@@ -217,7 +235,7 @@ internal class InstreamAdsHelper(
         }
     }
 
-    inner class InstreamAdEventLogger : InstreamAdLoadListener, InstreamAdListener {
+    inner class InstreamAdEventLogger : InstreamAdLoadListener, InstreamAdListener, InstreamAdPlayerListener {
         override fun onInstreamAdFailedToLoad(reason: String) {
             emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_FAILED_TO_LOAD, reason)
             isLoaded = false
@@ -231,14 +249,77 @@ internal class InstreamAdsHelper(
 
         override fun onError(reason: String) {
             emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_ERROR, reason)
+            cordova.activity.runOnUiThread {
+                hideAndCleanup()
+            }
         }
 
         override fun onInstreamAdCompleted() {
             emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_COMPLEATED)
+            cordova.activity.runOnUiThread {
+                hideAndCleanup()
+            }
         }
 
         override fun onInstreamAdPrepared() {
             emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_PREPARED)
+        }
+
+        // InstreamAdPlayerListener methods
+        override fun onAdBufferingFinished(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_BUFFERING_FINISHED)
+        }
+
+        override fun onAdBufferingStarted(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_BUFFERING_STARTED)
+        }
+
+        override fun onAdCompleted(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_COMPLETED)
+
+            cordova.activity.runOnUiThread {
+                hideAndCleanup()
+            }
+        }
+
+        override fun onAdPaused(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_PAUSED)
+        }
+
+        override fun onAdPrepared(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_PREPARED_PLAYER)
+        }
+
+        override fun onAdResumed(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_RESUMED)
+        }
+
+        override fun onAdSkipped(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_SKIPPED)
+
+            cordova.activity.runOnUiThread {
+                hideAndCleanup()
+            }
+        }
+
+        override fun onAdStarted(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_STARTED)
+        }
+
+        override fun onAdStopped(videoAd: VideoAd) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_STOPPED)
+        }
+
+        override fun onError(videoAd: VideoAd, error: InstreamAdPlayerError) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_ERROR, error.reason.toString())
+
+            cordova.activity.runOnUiThread {
+                hideAndCleanup()
+            }
+        }
+
+        override fun onVolumeChanged(videoAd: VideoAd, volume: Float) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_AD_VOLUME_CHANGED, volume.toString())
         }
     }
 }
