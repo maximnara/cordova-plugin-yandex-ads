@@ -75,7 +75,6 @@ internal class InstreamAdsHelper(
                 instreamAdView?.let { adView ->
                     if (!view.contains(adView)) {
                         view.addView(adView)
-                        adView.requestFocus()
                     }
                 }
             }
