@@ -211,7 +211,9 @@ internal class InstreamAdsHelper(
     private fun initPlayer(player: PlayerView) {
         cordova.activity.runOnUiThread {
             contentVideoPlayer = ContentVideoPlayer(contentStreamUrl, player)
-            instreamAdPlayer = SampleInstreamAdPlayer(player)
+            instreamAdPlayer = SampleInstreamAdPlayer(player).apply {
+                setInstreamAdPlayerListener(eventLogger)
+            }
         }
     }
 

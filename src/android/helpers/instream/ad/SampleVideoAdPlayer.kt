@@ -36,7 +36,7 @@ class SampleVideoAdPlayer(
         val streamUrl = videoAd.mediaFile.url
         val mediaSource = mediaSourceCreator.createMediaSource(streamUrl)
         adPlayer.apply {
-            playWhenReady = true
+            playWhenReady = false
             setMediaSource(mediaSource)
             prepare()
         }
