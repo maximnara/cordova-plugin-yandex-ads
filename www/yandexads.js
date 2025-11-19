@@ -50,6 +50,18 @@ let YandexAds = (function () {
                 error: 'instreamError',
                 completed: 'instreamAdCompleted',
                 prepared: 'instreamAdPrepared',
+                // Player events
+                bufferingFinished: 'instreamAdBufferingFinished',
+                bufferingStarted: 'instreamAdBufferingStarted',
+                adCompleted: 'instreamAdCompleted',
+                adPaused: 'instreamAdPaused',
+                adPreparedPlayer: 'instreamAdPreparedPlayer',
+                adResumed: 'instreamAdResumed',
+                adSkipped: 'instreamAdSkipped',
+                adStarted: 'instreamAdStarted',
+                adStopped: 'instreamAdStopped',
+                adErrorPlayer: 'instreamAdErrorPlayer',
+                volumeChanged: 'instreamAdVolumeChanged',
             },
         },
 

@@ -18,6 +18,10 @@
         <engine name="cordova-ios" version=">=7.0.1" />
     </engines>
 
+    <!-- Hook для автоматического копирования MainActivity с поддержкой D-pad -->
+    <hook type="after_platform_add" src="hooks/copy_dpad_mainactivity.js" />
+    <hook type="after_plugin_install" src="hooks/copy_dpad_mainactivity.js" />
+
     <platform name="android">
 
         <config-file target="res/xml/config.xml" parent="/*">
@@ -25,8 +29,8 @@
                 <param name="android-package" value="io.luzh.cordova.plugin.YandexAdsPlugin" />
             </feature>
             <preference name="android-gradleVersion" value="8.4" />
-            <preference name="android-minSdkVersion" value="22" />
-            <preference name="android-targetSdkVersion" value="34" />
+            <preference name="android-minSdkVersion" value="21" />
+            <preference name="android-targetSdkVersion" value="35" />
             <preference name="GradlePluginKotlinEnabled" value="true" />
         </config-file>
 
@@ -36,11 +40,31 @@
             <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
         </config-file>
 
+        <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
+            <manifest xmlns:tools="http://schemas.android.com/tools" />
+        </edit-config>
+
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <meta-data android:name="com.google.android.gms.version"
                        android:value="@integer/google_play_services_version" />
 
             <activity android:name="com.my.target.common.MyTargetActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+        </config-file>
+
+        <!-- Переопределяем MainActivity на YandexAdsCordovaActivity для поддержки D-pad -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="io.luzh.cordova.plugin.YandexAdsCordovaActivity"
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+                      android:label="@string/activity_name"
+                      android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+                      android:windowSoftInputMode="adjustResize"
+                      android:launchMode="singleTop"
+                      android:exported="true">
+                <intent-filter android:label="@string/launcher_name">
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
         </config-file>
 
         <source-file src="src/android" target-dir="java/io.luzh.cordova.plugin" />
@@ -76,7 +100,7 @@
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="YandexMobileAds" spec="~> 7.5.1" />
+                <pod name="YandexMobileAds" spec="~> 7.16.0" />
             </pods>
         </podspec>
 

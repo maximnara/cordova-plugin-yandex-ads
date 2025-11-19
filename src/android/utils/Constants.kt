@@ -96,4 +96,17 @@ internal object ConstantsEvents {
     const val EVENT_INSTREAM_ERROR = "instreamError"
     const val EVENT_INSTREAM_AD_COMPLEATED = "instreamAdCompleted"
     const val EVENT_INSTREAM_AD_PREPARED = "instreamAdPrepared"
+
+    // Instream player events
+    const val EVENT_INSTREAM_AD_BUFFERING_FINISHED = "instreamAdBufferingFinished"
+    const val EVENT_INSTREAM_AD_BUFFERING_STARTED = "instreamAdBufferingStarted"
+    const val EVENT_INSTREAM_AD_COMPLETED = "instreamAdCompleted"
+    const val EVENT_INSTREAM_AD_PAUSED = "instreamAdPaused"
+    const val EVENT_INSTREAM_AD_PREPARED_PLAYER = "instreamAdPreparedPlayer"
+    const val EVENT_INSTREAM_AD_RESUMED = "instreamAdResumed"
+    const val EVENT_INSTREAM_AD_SKIPPED = "instreamAdSkipped"
+    const val EVENT_INSTREAM_AD_STARTED = "instreamAdStarted"
+    const val EVENT_INSTREAM_AD_STOPPED = "instreamAdStopped"
+    const val EVENT_INSTREAM_AD_ERROR_PLAYER = "instreamAdErrorPlayer"
+    const val EVENT_INSTREAM_AD_VOLUME_CHANGED = "instreamAdVolumeChanged"
 }

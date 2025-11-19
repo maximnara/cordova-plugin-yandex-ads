@@ -2,7 +2,6 @@ package io.luzh.cordova.plugin
 
 import android.net.Uri
 import android.util.Log
-import com.demo.stand.R
 import com.yandex.mobile.ads.common.InitializationListener
 import com.yandex.mobile.ads.common.MobileAds.initialize
 import com.yandex.mobile.ads.common.MobileAds.setUserConsent
@@ -118,6 +117,13 @@ class YandexAdsPlugin : CordovaPlugin() {
     }
 
     /**
+     * Обработчик D-pad событий для навигации в рекламе
+     */
+    fun handleDpadEvent(keyCode: Int, event: android.view.KeyEvent): Boolean {
+        return instreamAdsHelper?.handleDpadEvent(keyCode, event) ?: false
+    }
+
+    /**
      * Intilization action Initializes Yandex Ads
      */
     private fun initAction(args: JSONArray, callbackContext: CallbackContext) {
@@ -133,7 +139,15 @@ class YandexAdsPlugin : CordovaPlugin() {
         val bannerAtTop = options.optBoolean(KEY_BANNER_AT_TOP, false)
         val bannerSize = options.optJSONObject(KEY_BANNER_SIZE)
 
-        val intreamContentUrl = Uri.parse("android.resource://" + cordova.context.packageName + "/" + R.raw.jc).toString()
+        val intreamContentUrl = try {
+            val resources = cordova.context.resources
+            val packageName = cordova.context.packageName
+            val resourceId = resources.getIdentifier("jc", "raw", packageName)
+            Uri.parse("android.resource://$packageName/$resourceId").toString()
+        } catch (e: Exception) {
+            Log.e(Constants.YANDEX_ADS_TAG, "Failed to get video resource: ${e.message}")
+            ""
+        }
 
         bannerAdsHelper = BannerAdsHelper(this, webView, bannerBlockId, bannerAtTop, bannerSize)
         rewardedAdsHelper = RewardedAdsHelper(this, webView, rewardedBlockId)
