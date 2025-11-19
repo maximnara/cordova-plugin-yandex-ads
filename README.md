@@ -14,8 +14,6 @@
 
 --------
 
-## !! Attention, last stable version is 2.3.0
-
 ### [Demo Video](https://youtube.com/watch?v=GN_R5Am5hbI)
 
 ## Table of Contents
