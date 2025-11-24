@@ -67,9 +67,6 @@ npm i cordova-plugin-yandex-ads --save
   - [Load Feed](#load-feed)
   - [Show Feed](#show-feed)
   - [Hide Feed](#hide-feed)
-  
-  
-All methods support optional `onSuccess` and `onFailure` parameters
 
 ### Initialization
 
@@ -105,14 +102,7 @@ https://github.com/maximnara/cordova-plugin-yandex-ads/assets/2614172/520052cd-4
 #### Load Rewarded Video
 
 ```javascript
-YandexAds.loadRewardedVideo({
-  onSuccess: function () {
-
-  },
-  onFailure: function () {
-
-  },
-});
+YandexAds.loadRewardedVideo();
 ```
 
 #### Show Rewarded Video
