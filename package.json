@@ -34,9 +34,6 @@
       }
     }
   ],
-  "dependencies": {
-    "node": "^16.4.0"
-  },
   "devDependencies": {
     "cordova": "^11.0.0"
   },
