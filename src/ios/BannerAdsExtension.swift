@@ -1,27 +1,25 @@
+import UIKit
 import YandexMobileAds
 
 let EVENT_BANNER_DID_LOAD = "bannerDidLoad"
 let EVENT_BANNER_DID_CLICK = "bannerDidClick"
 let EVENT_BANNER_DID_TRACK_IMPRESSION_WITH = "bannerDidTrackImpressionWith"
 let EVENT_BANNER_FAILED_TO_LOAD = "bannerFailedToLoad"
-let EVENT_BANNER_WILL_LEAVE_APPLICATION = "bannerWillLeaveApplication"
-let EVENT_BANNER_WILL_SHOW = "bannerWillShow"
-let EVENT_BANNER_DID_DISMISS = "bannerDidDismiss"
 
 extension YandexAdsPlugin {
-    func getBannerAdView() -> AdView {
+    func getBannerAdView() -> BannerAdView {
         if self.bannerAdViewCache != nil {
             return self.bannerAdViewCache!
         }
 
         let width = self.webView.safeAreaLayoutGuide.layoutFrame.width
-        var adSize = BannerAdSize.stickySize(withContainerWidth: width)
+        var adSize = BannerAdSize.sticky(containerWidth: width)
 
         if (self.bannerSize != nil && self.bannerSize?["width"] != nil && self.bannerSize?["height"] != nil) {
-            adSize = BannerAdSize.inlineSize(withWidth: self.bannerSize?["width"] as! CGFloat, maxHeight: self.bannerSize?["height"] as! CGFloat)
+            adSize = BannerAdSize.inline(width: self.bannerSize?["width"] as! CGFloat, maxHeight: self.bannerSize?["height"] as! CGFloat)
         }
 
-        let adView = AdView(adUnitID: self.bannerBlockId!, adSize: adSize)
+        let adView = BannerAdView(adSize: adSize)
 
         adView.delegate = self
 
@@ -37,7 +35,7 @@ extension YandexAdsPlugin {
             return;
         }
 
-        self.getBannerAdView().loadAd()
+        self.getBannerAdView().loadAd(with: AdRequest(adUnitID: self.bannerBlockId!))
 
         self.sendResult(command: command);
     }
@@ -77,7 +75,7 @@ extension YandexAdsPlugin {
         self.bannerReloaded = true
 
         let banner = self.getBannerAdView();
-        banner.loadAd()
+        banner.loadAd(with: AdRequest(adUnitID: self.bannerBlockId!))
 
         // show banner
         if (self.bannerSize != nil && self.bannerSize?["width"] != nil && self.bannerSize?["height"] != nil) {
@@ -94,7 +92,7 @@ extension YandexAdsPlugin {
         self.sendResult(command: command);
     }
 
-    func showOverlapBanner(banner: AdView) {
+    func showOverlapBanner(banner: BannerAdView) {
         if self.bannerAtTop != nil && self.bannerAtTop == true {
             banner.displayAtTop(in: webView)
         } else {
@@ -102,7 +100,7 @@ extension YandexAdsPlugin {
         }
     }
 
-    func showInlineBanner(banner: AdView) {
+    func showInlineBanner(banner: BannerAdView) {
         let stackview: UIStackView = {
             let view = UIStackView()
             view.axis = .vertical
@@ -171,36 +169,24 @@ extension YandexAdsPlugin {
     }
 }
 
-extension YandexAdsPlugin: AdViewDelegate {
-    func adViewDidLoad(_ adView: AdView) {
+extension YandexAdsPlugin: BannerAdViewDelegate {
+    func bannerAdViewDidLoad(_ adView: BannerAdView) {
         if (self.bannerReloaded == nil || self.bannerReloaded == false) {
             self.emitWindowEvent(event: EVENT_BANNER_DID_LOAD)
         }
         self.bannerReloaded = false
     }
 
-    func adViewDidClick(_ adView: AdView) {
+    func bannerAdViewDidClick(_ adView: BannerAdView) {
         self.emitWindowEvent(event: EVENT_BANNER_DID_CLICK)
     }
 
-    func adView(_ adView: AdView, didTrackImpression impressionData: ImpressionData?) {
+    func bannerAdView(_ adView: BannerAdView, didTrackImpression impressionData: ImpressionData?) {
         self.emitWindowEvent(event: EVENT_BANNER_DID_TRACK_IMPRESSION_WITH)
     }
 
-    func adViewDidFailLoading(_ adView: AdView, error: Error) {
+    func bannerAdViewDidFailLoading(_ adView: BannerAdView, error: Error) {
         let data = ErrorData(message: error.localizedDescription)
         self.emitWindowEvent(event: EVENT_BANNER_FAILED_TO_LOAD, data: data)
-    }
-
-    func adViewWillLeaveApplication(_ adView: AdView) {
-        self.emitWindowEvent(event: EVENT_BANNER_WILL_LEAVE_APPLICATION)
-    }
-
-    func adView(_ adView: AdView, willPresentScreen viewController: UIViewController?) {
-        self.emitWindowEvent(event: EVENT_BANNER_WILL_SHOW)
-    }
-
-    func adView(_ adView: AdView, didDismissScreen viewController: UIViewController?) {
-        self.emitWindowEvent(event: EVENT_BANNER_DID_DISMISS)
     }
 }

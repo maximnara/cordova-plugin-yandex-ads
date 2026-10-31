@@ -1,0 +1,109 @@
+name: Clean Cordova installation
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: install-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    name: Clean installation (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            runner: ubuntu-latest
+          - platform: ios
+            runner: macos-26
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Set up Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle bootstrap
+        if: matrix.platform == 'android'
+        uses: gradle/actions/setup-gradle@v6.4.1
+        with:
+          # Used only to generate the wrapper; Cordova selects the build version.
+          gradle-version: '8.14.2'
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Prepare Android SDK
+        if: matrix.platform == 'android'
+        run: |
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          java -version
+          gradle --version
+
+      - name: Check iOS toolchain
+        if: matrix.platform == 'ios'
+        run: |
+          xcodebuild -version
+          pod --version
+
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Test clean installation and build
+        env:
+          TMPDIR: ${{ runner.temp }}
+          TEST_PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -o pipefail
+          npm run test:install -- "$TEST_PLATFORM" 2>&1 | tee "$RUNNER_TEMP/install-smoke.log"
+
+      - name: Archive iOS Simulator app
+        if: success() && matrix.platform == 'ios'
+        run: |
+          for app in "$RUNNER_TEMP"/yandex-cordova-install-*/app/platforms/ios/build/Debug-iphonesimulator/YandexInstallTest.app; do
+            if [[ -d "$app" ]]; then
+              tar -czf "$RUNNER_TEMP/ios-simulator-app.tar.gz" -C "$(dirname "$app")" "$(basename "$app")"
+              break
+            fi
+          done
+
+      - name: Upload logs and build results
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: install-smoke-${{ matrix.platform }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/install-smoke.log
+            ${{ runner.temp }}/ios-simulator-app.tar.gz
+            ${{ runner.temp }}/yandex-cordova-install-*/app/config.xml
+            ${{ runner.temp }}/yandex-cordova-install-*/app/package*.json
+            ${{ runner.temp }}/yandex-cordova-install-*/app/platforms/android/cdv-gradle-config.json
+            ${{ runner.temp }}/yandex-cordova-install-*/app/platforms/android/app/build/outputs/apk/debug/*.apk
+            ${{ runner.temp }}/yandex-cordova-install-*/app/platforms/android/app/build/reports/**
+            ${{ runner.temp }}/yandex-cordova-install-*/app/platforms/ios/Podfile*

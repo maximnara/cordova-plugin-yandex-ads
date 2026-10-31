@@ -1,19 +1,24 @@
-cdvPluginPostBuildExtras.add({
-    android {
-      compileOptions {
-          sourceCompatibility JavaVersion.VERSION_11
-          targetCompatibility JavaVersion.VERSION_11
-      }
-      buildToolsVersion "35.0.0"
+// Applied by Cordova as a plugin Gradle extension. Kotlin must be configured
+// here: preferences in res/xml/config.xml do not enable the build plugin.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
     }
-
     dependencies {
-        implementation fileTree(dir: 'libs', include: ['*.jar'])
-        implementation 'com.yandex.android:mobileads:7.16.0'
-        implementation 'com.google.android.exoplayer:exoplayer:2.18.1'
-//         implementation 'com.yandex.android:mobmetricalib:5.2.0'
-//
-//         implementation 'com.yandex.ads.mediation:mobileads-mytarget:5.15.0.0'
-//         implementation 'com.my.target:mytarget-sdk:5.15.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.cordovaConfig.KOTLIN_VERSION}"
     }
-});
+}
+
+apply plugin: 'org.jetbrains.kotlin.android'
+
+android {
+    kotlinOptions {
+        jvmTarget = cordovaConfig.KOTLIN_JVM_TARGET ?: cordovaConfig.JAVA_TARGET_COMPATIBILITY.toString()
+    }
+}
+
+dependencies {
+    implementation 'com.yandex.android:mobileads:8.6.0'
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.1'
+}

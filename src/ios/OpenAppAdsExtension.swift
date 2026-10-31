@@ -14,8 +14,20 @@ extension YandexAdsPlugin {
             return;
         }
 
-        let configuration = AdRequestConfiguration(adUnitID: self.openAppBlockId!)
-        appOpenAdLoader.loadAd(with: configuration)
+        let request = AdRequest(adUnitID: self.openAppBlockId!)
+        self.appOpenAd = nil
+        self.appOpenAdLoader.loadAd(with: request) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let ad):
+                self.appOpenAd = ad
+                ad.delegate = self
+                self.emitWindowEvent(event: EVENT_APP_OPEN_DID_LOAD)
+            case .failure(let error):
+                let data = ErrorData(id: request.adUnitID, message: error.localizedDescription)
+                self.emitWindowEvent(event: EVENT_APP_OPEN_FAILED_TO_LOAD, data: data)
+            }
+        }
 
         self.sendResult(command: command);
     }
@@ -44,7 +56,7 @@ extension YandexAdsPlugin: AppOpenAdDelegate {
 
     func appOpenAd(
         _ appOpenAd: AppOpenAd,
-        didFailToShowWithError error: Error
+        didFailToShow error: Error
     ) {
         self.appOpenAd = nil
 
@@ -60,35 +72,10 @@ extension YandexAdsPlugin: AppOpenAdDelegate {
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_CLICK)
     }
 
-    func appOpenAd(_ appOpenAd: AppOpenAd, didTrackImpressionWith impressionData: ImpressionData?) {
+    func appOpenAd(_ appOpenAd: AppOpenAd, didTrackImpression impressionData: ImpressionData?) {
         self.emitWindowEvent(event: EVENT_APP_OPEN_DID_TRACK_IMPRESSION_WITH)
     }
 }
 
 let EVENT_APP_OPEN_DID_LOAD = "appOpenDidLoad"
 let EVENT_APP_OPEN_FAILED_TO_LOAD = "appOpenFailedToLoad"
-
-// MARK: - AppOpenAdLoaderDelegate
-extension YandexAdsPlugin: AppOpenAdLoaderDelegate {
-    func appOpenAdLoader(
-        _ adLoader: AppOpenAdLoader,
-        didLoad appOpenAd: AppOpenAd
-    ) {
-        self.appOpenAd = appOpenAd
-        self.appOpenAd?.delegate = self
-        
-        self.emitWindowEvent(event: EVENT_APP_OPEN_DID_LOAD)
-    }
-
-    func appOpenAdLoader(
-        _ adLoader: AppOpenAdLoader,
-        didFailToLoadWithError error: AdRequestError
-    ) {
-        self.appOpenAd = nil
-        let id = error.adUnitId
-        let error = error.error
-        
-        let data = ErrorData(message: error.localizedDescription)
-        self.emitWindowEvent(event: EVENT_APP_OPEN_DID_LOAD, data: data)
-    }
-}

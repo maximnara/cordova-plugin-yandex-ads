@@ -6,11 +6,12 @@ import android.view.KeyEvent
 import androidx.core.view.contains
 import com.google.android.exoplayer2.ui.PlayerView
 import com.yandex.mobile.ads.instream.InstreamAd
-import com.yandex.mobile.ads.instream.InstreamAdBinder
+import com.yandex.mobile.ads.instream.binder.InstreamAdBinder
 import com.yandex.mobile.ads.instream.InstreamAdListener
 import com.yandex.mobile.ads.instream.InstreamAdLoadListener
 import com.yandex.mobile.ads.instream.InstreamAdLoader
-import com.yandex.mobile.ads.instream.InstreamAdRequestConfiguration
+import com.yandex.mobile.ads.instream.InstreamAdRequest
+import com.yandex.mobile.ads.instream.InstreamAdRequestError
 import com.yandex.mobile.ads.instream.player.ad.InstreamAdView
 import com.yandex.mobile.ads.instream.player.ad.InstreamAdPlayerListener
 import com.yandex.mobile.ads.instream.player.ad.error.InstreamAdPlayerError
@@ -39,19 +40,20 @@ internal class InstreamAdsHelper(
     private var instreamAdView: InstreamAdView? = null
     private var instreamAd: InstreamAd? = null
     private var isLoaded = false
+    private var isCleaningUp = false
 
-    override fun getLoader() = InstreamAdLoader(cordova.context).apply {
-        setInstreamAdLoadListener(eventLogger)
-    }
+    private val instreamAdLoader by lazy { InstreamAdLoader(cordova.context) }
+
+    override fun getLoader() = instreamAdLoader
 
     override fun load(callbackContext: CallbackContext) {
-        init()
-
-        val instreamAdLoader = getLoader()
-        val configuration = InstreamAdRequestConfiguration.Builder(blockId).build()
-
-        instreamAdLoader.loadInstreamAd(cordova.context, configuration)
-        callbackContext.success()
+        cordova.activity.runOnUiThread {
+            hideAndCleanup()
+            init()
+            val request = InstreamAdRequest.Builder(blockId).build()
+            getLoader().loadAd(request, eventLogger)
+            callbackContext.success()
+        }
     }
 
     override fun show(callbackContext: CallbackContext) {
@@ -88,8 +90,8 @@ internal class InstreamAdsHelper(
             instreamAdBinder = InstreamAdBinder(
                 cordova.context,
                 instreamAd,
-                adPlayer,
-                videoPlayer
+                videoPlayer,
+                adPlayer
             ).apply {
                 setInstreamAdListener(eventLogger)
                 instreamAdView?.let {
@@ -149,24 +151,10 @@ internal class InstreamAdsHelper(
     }
 
     private fun hideAndCleanup() {
+        onDestroy()
         (cordovaWebView.view as? ViewGroup)?.let { view ->
-            // Останавливаем плееры
-            instreamAdPlayer?.pause()
-            contentVideoPlayer?.pause()
-
-            // Очищаем playerView из плеера
-            playerView?.player = null
-
-            // Удаляем playerView из instreamAdView
-            instreamAdView?.removeView(playerView)
-
-            // Удаляем instreamAdView из родительского контейнера
-            view.removeView(instreamAdView)
-
             view.isFocusable = true
             view.requestFocus()
-
-            onDestroy()
         }
     }
 
@@ -188,16 +176,31 @@ internal class InstreamAdsHelper(
     }
 
     fun onDestroy() {
-        instreamAdBinder?.unbind()
-        instreamAdBinder?.invalidateAdPlayer()
-        instreamAdBinder?.invalidateVideoPlayer()
+        if (isCleaningUp) return
+        isCleaningUp = true
+        try {
+            isLoaded = false
+            instreamAdLoader.cancelLoading()
+            instreamAdBinder?.setInstreamAdListener(null)
+            instreamAdBinder?.unbind()
+            instreamAdBinder?.invalidateAdPlayer()
+            instreamAdBinder?.invalidateVideoPlayer()
 
-        contentVideoPlayer?.release()
-        instreamAdPlayer?.release()
-        activePlayer = null
-        contentVideoPlayer = null
-        instreamAdPlayer = null
-        isLoaded = false
+            playerView?.player = null
+            (playerView?.parent as? ViewGroup)?.removeView(playerView)
+            (instreamAdView?.parent as? ViewGroup)?.removeView(instreamAdView)
+            contentVideoPlayer?.release()
+            instreamAdPlayer?.release()
+            activePlayer = null
+            contentVideoPlayer = null
+            instreamAdPlayer = null
+            instreamAdBinder = null
+            instreamAd = null
+            playerView = null
+            instreamAdView = null
+        } finally {
+            isCleaningUp = false
+        }
     }
 
     private fun init() {
@@ -211,9 +214,7 @@ internal class InstreamAdsHelper(
     private fun initPlayer(player: PlayerView) {
         cordova.activity.runOnUiThread {
             contentVideoPlayer = ContentVideoPlayer(contentStreamUrl, player)
-            instreamAdPlayer = SampleInstreamAdPlayer(player).apply {
-                setInstreamAdPlayerListener(eventLogger)
-            }
+            instreamAdPlayer = SampleInstreamAdPlayer(player, eventLogger)
         }
     }
 
@@ -238,15 +239,15 @@ internal class InstreamAdsHelper(
     }
 
     inner class InstreamAdEventLogger : InstreamAdLoadListener, InstreamAdListener, InstreamAdPlayerListener {
-        override fun onInstreamAdFailedToLoad(reason: String) {
-            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_FAILED_TO_LOAD, reason)
+        override fun onInstreamAdFailedToLoad(error: InstreamAdRequestError) {
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_FAILED_TO_LOAD, error.description)
             isLoaded = false
         }
 
         override fun onInstreamAdLoaded(instreamAd: InstreamAd) {
-            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_LOADED)
             isLoaded = true
             this@InstreamAdsHelper.instreamAd = instreamAd
+            emitWindowEvent(ConstantsEvents.EVENT_INSTREAM_LOADED)
         }
 
         override fun onError(reason: String) {

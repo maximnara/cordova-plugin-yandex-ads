@@ -3,6 +3,7 @@ package io.luzh.cordova.plugin.helpers
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import com.yandex.mobile.ads.feed.FeedAd
@@ -10,7 +11,6 @@ import com.yandex.mobile.ads.feed.FeedAdAdapter
 import com.yandex.mobile.ads.feed.FeedAdAppearance
 import com.yandex.mobile.ads.feed.FeedAdEventListener
 import com.yandex.mobile.ads.feed.FeedAdLoadListener
-import com.yandex.mobile.ads.feed.FeedAdRequestConfiguration
 import io.luzh.cordova.plugin.utils.ConstantsEvents
 import io.luzh.cordova.plugin.utils.ScreenUtil.screenWidth
 import org.apache.cordova.CallbackContext
@@ -28,31 +28,32 @@ internal class FeedAdsHelper(
 
     override fun getLoader() = null
     override fun load(callbackContext: CallbackContext) {
-        val calculatedFeedCardWidth = calculateFeedCardWidth()
-        val feedAdAppearance = FeedAdAppearance(
-            cardWidth = calculatedFeedCardWidth,
-            cardCornerRadius = CARD_CORNER_RADIUS_DP
-        )
-        val feedAdRequestConfiguration = FeedAdRequestConfiguration.Builder(blockId).build()
+        cordova.activity.runOnUiThread {
+            val calculatedFeedCardWidth = calculateFeedCardWidth()
+            val feedAdAppearance = FeedAdAppearance(
+                cardWidth = calculatedFeedCardWidth,
+                cardCornerRadius = CARD_CORNER_RADIUS_DP
+            )
+            val adRequest = AdRequest.Builder(blockId).build()
 
-        feedAd =
-            FeedAd.Builder(cordova.context, feedAdRequestConfiguration, feedAdAppearance).build()
-        feedAd?.loadListener = getAdLoadListener()
-        feedAd?.preloadAd()
+            feedAd =
+                FeedAd.Builder(cordova.context, adRequest, feedAdAppearance).build()
+            feedAd?.loadListener = getAdLoadListener()
+            feedAd?.preloadAd()
 
-        callbackContext.success()
+            callbackContext.success()
+        }
     }
 
     override fun show(callbackContext: CallbackContext) {
-        feedAdAdapter = feedAd?.let { FeedAdAdapter(it) }
-        feedAdAdapter?.eventListener = getAdEventListener()
-
         cordova.activity.runOnUiThread {
+            feedAdAdapter = feedAd?.let { FeedAdAdapter(it) }
+            feedAdAdapter?.eventListener = getAdEventListener()
             (cordovaWebView.view as? ViewGroup)?.addView(feedAdAdapter?.let { adapter ->
                 getRecyclerView(adapter).also { recyclerView = it }
             })
+            callbackContext.success()
         }
-        callbackContext.success()
     }
 
     fun hide(callbackContext: CallbackContext) {
@@ -61,6 +62,7 @@ internal class FeedAdsHelper(
             recyclerView = null
             feedAdAdapter = null
             feedAd = null
+            callbackContext.success()
         }
     }
 

@@ -1,3 +1,5 @@
+import Foundation
+
 extension YandexAdsPlugin {
     struct ErrorData: Encodable {
         var id: String?
@@ -5,7 +7,7 @@ extension YandexAdsPlugin {
     }
     
     public func sendResult(command: CDVInvokedUrlCommand) {
-        var pluginResult = CDVPluginResult(
+        let pluginResult = CDVPluginResult(
           status: CDVCommandStatus_OK
         )
 
@@ -43,10 +45,10 @@ extension YandexAdsPlugin {
     
     public func emitWindowEvent(event: String, data: Encodable) {
         do {
-            struct emptyObj: Encodable {}
-            let _encodedData = try JSONEncoder().encode(data)
-                
-            let js = "cordova.fireWindowEvent('\(event)', '\(_encodedData)')"
+            let encodedData = try JSONEncoder().encode(data)
+            let json = String(decoding: encodedData, as: UTF8.self)
+
+            let js = "cordova.fireWindowEvent('\(event)', \(json))"
             
             self.commandDelegate.evalJs(js)
         } catch {

@@ -82,7 +82,6 @@ internal object ConstantsEvents {
     const val EVENT_BANNER_FAILED_TO_LOAD = "bannerFailedToLoad"
     const val EVENT_BANNER_DID_CLICK = "bannerDidClick"
     const val EVENT_BANNER_IMPRESSION = "bannerDidTrackImpressionWith"
-    const val EVENT_BANNER_LEFT_APPLICATION = "bannerWillLeaveApplication"
 
     // Feed events
     const val EVENT_FEED_LOADED = "feedDidLoad"

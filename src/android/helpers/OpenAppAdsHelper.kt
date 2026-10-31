@@ -5,7 +5,7 @@ import com.yandex.mobile.ads.appopenad.AppOpenAdEventListener
 import com.yandex.mobile.ads.appopenad.AppOpenAdLoadListener
 import com.yandex.mobile.ads.appopenad.AppOpenAdLoader
 import com.yandex.mobile.ads.common.AdError
-import com.yandex.mobile.ads.common.AdRequestConfiguration
+import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import io.luzh.cordova.plugin.utils.ConstantsEvents.EVENT_APP_OPEN_ADS_CLICKED
@@ -26,51 +26,53 @@ internal class OpenAppAdsHelper(
 ) : BaseAdsHelper<AppOpenAdLoader>(cordovaPlugin, cordovaWebView, blockId) {
     private var mOpenAppAd: AppOpenAd? = null
 
-    override fun getLoader() = AppOpenAdLoader(cordova.context).apply {
-        setAdLoadListener(object : AppOpenAdLoadListener {
-            override fun onAdLoaded(appOpenAd: AppOpenAd) {
-                mOpenAppAd = appOpenAd
+    override fun getLoader() = AppOpenAdLoader(cordova.context)
 
-                appOpenAd.setAdEventListener(object : AppOpenAdEventListener {
-                    override fun onAdShown() {
-                        emitWindowEvent(EVENT_APP_OPEN_ADS_SHOWN)
-                    }
+    private val adLoadListener = object : AppOpenAdLoadListener {
+        override fun onAdLoaded(appOpenAd: AppOpenAd) {
+            mOpenAppAd = appOpenAd
 
-                    override fun onAdFailedToShow(adError: AdError) {
-                        emitWindowEvent(EVENT_APP_OPEN_ADS_FAILED_TO_SHOW)
-                    }
+            appOpenAd.setAdEventListener(object : AppOpenAdEventListener {
+                override fun onAdShown() {
+                    emitWindowEvent(EVENT_APP_OPEN_ADS_SHOWN)
+                }
 
-                    override fun onAdDismissed() {
-                        emitWindowEvent(EVENT_APP_OPEN_ADS_DISMISSED)
-                    }
+                override fun onAdFailedToShow(adError: AdError) {
+                    emitWindowEvent(EVENT_APP_OPEN_ADS_FAILED_TO_SHOW)
+                }
 
-                    override fun onAdClicked() {
-                        emitWindowEvent(EVENT_APP_OPEN_ADS_CLICKED)
-                    }
+                override fun onAdDismissed() {
+                    emitWindowEvent(EVENT_APP_OPEN_ADS_DISMISSED)
+                }
 
-                    override fun onAdImpression(impressionData: ImpressionData?) {
-                        emitWindowEvent(EVENT_APP_OPEN_ADS_IMPRESSION)
-                    }
-                })
+                override fun onAdClicked() {
+                    emitWindowEvent(EVENT_APP_OPEN_ADS_CLICKED)
+                }
 
-                emitWindowEvent(EVENT_APP_OPEN_ADS_LOADED)
-            }
+                override fun onAdImpression(impressionData: ImpressionData?) {
+                    emitWindowEvent(EVENT_APP_OPEN_ADS_IMPRESSION)
+                }
+            })
 
-            override fun onAdFailedToLoad(error: AdRequestError) {
-                emitWindowEvent(EVENT_APP_OPEN_ADS_FAILED_TO_LOAD, error.description)
-            }
-        })
+            emitWindowEvent(EVENT_APP_OPEN_ADS_LOADED)
+        }
+
+        override fun onAdFailedToLoad(error: AdRequestError) {
+            emitWindowEvent(EVENT_APP_OPEN_ADS_FAILED_TO_LOAD, error.description)
+        }
     }
 
     override fun load(callbackContext: CallbackContext) {
         cordova.activity.runOnUiThread {
-            getLoader().loadAd(AdRequestConfiguration.Builder(blockId).build())
+            getLoader().loadAd(AdRequest.Builder(blockId).build(), adLoadListener)
             callbackContext.success()
         }
     }
 
     override fun show(callbackContext: CallbackContext) {
-        callbackContext.success()
-        mOpenAppAd?.show(cordova.activity)
+        cordova.activity.runOnUiThread {
+            mOpenAppAd?.show(cordova.activity)
+            callbackContext.success()
+        }
     }
 }

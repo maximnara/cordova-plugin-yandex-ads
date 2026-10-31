@@ -149,19 +149,18 @@ internal class BannerAdsHelper(
         cordova.getActivity().runOnUiThread(Runnable {
             hideBannerView()
             mBannerAdView = BannerAdView(cordova.activity)
-            mBannerAdView?.setAdUnitId(blockId)
 
             // determine the size of the advertising banner
             val adSize =
                 if (bannerSize != null && bannerSize.has("width") && bannerSize.has("height")) {
-                    BannerAdSize.inlineSize(
+                    BannerAdSize.inline(
                         cordova.context,
                         bannerSize.optInt("width"),
                         bannerSize.optInt("height")
                     )
                 } else {
                     val adWidth = cordovaWebView.view.width
-                    BannerAdSize.stickySize(cordova.context, adWidth)
+                    BannerAdSize.sticky(cordova.context, adWidth)
                 }
 
             // set the banner size
@@ -169,7 +168,7 @@ internal class BannerAdsHelper(
 
             bannerShown = false
 
-            val adRequest: AdRequest = AdRequest.Builder().build()
+            val adRequest: AdRequest = AdRequest.Builder(blockId).build()
 
             mBannerAdView?.setBannerAdEventListener(object : BannerAdEventListener {
                 override fun onAdLoaded() {
@@ -188,12 +187,6 @@ internal class BannerAdsHelper(
                 override fun onImpression(impressionData: ImpressionData?) {
                     emitWindowEvent(ConstantsEvents.EVENT_BANNER_IMPRESSION)
                 }
-
-                override fun onLeftApplication() {
-                    emitWindowEvent(ConstantsEvents.EVENT_BANNER_LEFT_APPLICATION)
-                }
-
-                override fun onReturnedToApplication() {}
             })
 
             mBannerAdView?.loadAd(adRequest)
@@ -233,25 +226,24 @@ internal class BannerAdsHelper(
                 destroyBanner()
             }
             mBannerAdView = BannerAdView(cordovaPlugin.cordova.activity)
-            mBannerAdView?.setAdUnitId(blockId)
 
             val adSize =
                 if (bannerSize != null && bannerSize.has("width") && bannerSize.has("height")) {
-                    BannerAdSize.inlineSize(
+                    BannerAdSize.inline(
                         cordovaPlugin.cordova.context,
                         bannerSize.optInt("width"),
                         bannerSize.optInt("height")
                     )
                 } else {
                     val adWidth = cordovaWebView.view.width
-                    BannerAdSize.stickySize(cordovaPlugin.cordova.context, adWidth)
+                    BannerAdSize.sticky(cordovaPlugin.cordova.context, adWidth)
                 }
 
             mBannerAdView?.let { it.setAdSize(adSize) }
 
             bannerShown = false
 
-            val adRequest: AdRequest = AdRequest.Builder().build()
+            val adRequest: AdRequest = AdRequest.Builder(blockId).build()
 
             mBannerAdView?.setBannerAdEventListener(object : BannerAdEventListener {
                 override fun onAdLoaded() {
@@ -296,12 +288,6 @@ internal class BannerAdsHelper(
                 override fun onImpression(impressionData: ImpressionData?) {
                     emitWindowEvent(ConstantsEvents.EVENT_BANNER_IMPRESSION)
                 }
-
-                override fun onLeftApplication() {
-                    emitWindowEvent(ConstantsEvents.EVENT_BANNER_LEFT_APPLICATION)
-                }
-
-                override fun onReturnedToApplication() {}
             })
 
             if (bannerSize != null) {

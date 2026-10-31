@@ -3,8 +3,8 @@ package io.luzh.cordova.plugin
 import android.net.Uri
 import android.util.Log
 import com.yandex.mobile.ads.common.InitializationListener
-import com.yandex.mobile.ads.common.MobileAds.initialize
-import com.yandex.mobile.ads.common.MobileAds.setUserConsent
+import com.yandex.mobile.ads.common.YandexAds.initialize
+import com.yandex.mobile.ads.common.YandexAds.setUserConsent
 import io.luzh.cordova.plugin.helpers.BannerAdsHelper
 import io.luzh.cordova.plugin.helpers.FeedAdsHelper
 import io.luzh.cordova.plugin.helpers.InterstitialAdsHelper

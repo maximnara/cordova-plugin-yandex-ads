@@ -1,13 +1,18 @@
 package io.luzh.cordova.plugin.helpers.instream.ad
 
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import com.yandex.mobile.ads.instream.player.ad.InstreamAdPlayer
 import com.yandex.mobile.ads.instream.player.ad.InstreamAdPlayerListener
+import com.yandex.mobile.ads.instream.player.ad.InstreamAdMimeTypes
+import com.yandex.mobile.ads.instream.player.ad.error.InstreamAdPlayerError
 import com.yandex.mobile.ads.video.playback.model.VideoAd
 import io.luzh.cordova.plugin.helpers.instream.SamplePlayer
 
 class SampleInstreamAdPlayer(
     private val exoPlayerView: PlayerView,
+    private val eventListener: InstreamAdPlayerListener,
 ) : InstreamAdPlayer, SamplePlayer {
 
     private val adPlayers = mutableMapOf<VideoAd, SampleVideoAdPlayer>()
@@ -15,16 +20,85 @@ class SampleInstreamAdPlayer(
     private var currentVideoAd: VideoAd? = null
     private var adPlayerListener: InstreamAdPlayerListener? = null
 
+    // The SDK installs its own player listener when binding. Keep Cordova events
+    // as a separate observer so neither listener replaces the other.
+    private val playerListener = object : InstreamAdPlayerListener {
+        override fun onAdPrepared(videoAd: VideoAd) {
+            adPlayerListener?.onAdPrepared(videoAd)
+            eventListener.onAdPrepared(videoAd)
+        }
+
+        override fun onAdStarted(videoAd: VideoAd) {
+            adPlayerListener?.onAdStarted(videoAd)
+            eventListener.onAdStarted(videoAd)
+        }
+
+        override fun onAdPaused(videoAd: VideoAd) {
+            adPlayerListener?.onAdPaused(videoAd)
+            eventListener.onAdPaused(videoAd)
+        }
+
+        override fun onAdResumed(videoAd: VideoAd) {
+            adPlayerListener?.onAdResumed(videoAd)
+            eventListener.onAdResumed(videoAd)
+        }
+
+        override fun onAdBufferingStarted(videoAd: VideoAd) {
+            adPlayerListener?.onAdBufferingStarted(videoAd)
+            eventListener.onAdBufferingStarted(videoAd)
+        }
+
+        override fun onAdBufferingFinished(videoAd: VideoAd) {
+            adPlayerListener?.onAdBufferingFinished(videoAd)
+            eventListener.onAdBufferingFinished(videoAd)
+        }
+
+        override fun onAdCompleted(videoAd: VideoAd) {
+            adPlayerListener?.onAdCompleted(videoAd)
+            eventListener.onAdCompleted(videoAd)
+        }
+
+        override fun onAdStopped(videoAd: VideoAd) {
+            adPlayerListener?.onAdStopped(videoAd)
+            eventListener.onAdStopped(videoAd)
+        }
+
+        override fun onAdSkipped(videoAd: VideoAd) {
+            adPlayerListener?.onAdSkipped(videoAd)
+            eventListener.onAdSkipped(videoAd)
+        }
+
+        override fun onVolumeChanged(videoAd: VideoAd, volume: Float) {
+            adPlayerListener?.onVolumeChanged(videoAd, volume)
+            eventListener.onVolumeChanged(videoAd, volume)
+        }
+
+        override fun onError(videoAd: VideoAd, error: InstreamAdPlayerError) {
+            adPlayerListener?.onError(videoAd, error)
+            eventListener.onError(videoAd, error)
+        }
+    }
+
+    // Keep the custom player's existing progressive video formats.
+    override val supportedMimeTypes = listOf(InstreamAdMimeTypes.MP4, InstreamAdMimeTypes.WEBM)
+
+    override fun bindPlayerView(container: FrameLayout) {
+        (exoPlayerView.parent as? ViewGroup)?.removeView(exoPlayerView)
+        container.addView(exoPlayerView, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ))
+    }
+
     override fun setInstreamAdPlayerListener(instreamAdPlayerListener: InstreamAdPlayerListener?) {
         adPlayerListener = instreamAdPlayerListener
-        adPlayers.values.forEach { it.setInstreamAdPlayerListener(instreamAdPlayerListener) }
     }
 
     override fun prepareAd(videoAd: VideoAd) {
         val videoAdPlayer = SampleVideoAdPlayer(videoAd, exoPlayerView)
         adPlayers[videoAd] = videoAdPlayer
 
-        videoAdPlayer.setInstreamAdPlayerListener(adPlayerListener)
+        videoAdPlayer.setInstreamAdPlayerListener(playerListener)
         videoAdPlayer.prepareAd()
     }
 
@@ -83,8 +157,14 @@ class SampleInstreamAdPlayer(
     }
 
     fun release() {
-        adPlayers.values.forEach(SampleVideoAdPlayer::releaseAd)
+        val players = adPlayers.values.toList()
+        adPlayers.clear()
+        adPlayerListener = null
         currentVideoAd = null
+        players.forEach {
+            it.setInstreamAdPlayerListener(null)
+            it.releaseAd()
+        }
     }
 
     override fun isPlaying(): Boolean {

@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 import YandexMobileAds
 
@@ -7,6 +8,7 @@ let PLUGIN_NOT_INITIALIZED_ERROR = [
     "message": "Plugin not initialized, call .init before ads load"
 ]
 
+@MainActor
 @objc(YandexAdsPlugin)
 class YandexAdsPlugin: CDVPlugin {
     public var rewardedBlockId: String?
@@ -22,7 +24,7 @@ class YandexAdsPlugin: CDVPlugin {
     public var interstitialAd: InterstitialAd?
     public var rewardedAd: RewardedAd?
     public var appOpenAd: AppOpenAd?
-    public var bannerAdViewCache: AdView?
+    public var bannerAdViewCache: BannerAdView?
 
     public var superView: UIView?
     public var stackViewInlineBannerView: UIStackView?
@@ -57,36 +59,18 @@ class YandexAdsPlugin: CDVPlugin {
 
         self.bannerSize = options["bannerSize"] as? NSDictionary;
 
-        self.sendResult(command: command);
+        YandexAds.initializeSDK { [weak self] in
+            self?.sendResult(command: command)
+        }
     }
 
-    public lazy var interstitialAdLoader: InterstitialAdLoader = {
-        let loader = InterstitialAdLoader()
-
-        loader.delegate = self
-
-        return loader
-    }()
-
-    public lazy var rewardedAdLoader: RewardedAdLoader = {
-        let loader = RewardedAdLoader()
-
-        loader.delegate = self
-
-        return loader
-    }()
-
-    public lazy var appOpenAdLoader: AppOpenAdLoader = {
-        let loader = AppOpenAdLoader()
-
-        loader.delegate = self
-
-        return loader
-    }()
+    public lazy var interstitialAdLoader = InterstitialAdLoader()
+    public lazy var rewardedAdLoader = RewardedAdLoader()
+    public lazy var appOpenAdLoader = AppOpenAdLoader()
 
     @objc(setUserConsent:)
     func setUserConsent(command: CDVInvokedUrlCommand) {
-        MobileAds.setUserConsent(command.arguments[0] as? Bool ?? false);
+        YandexAds.setUserConsent(command.arguments[0] as? Bool ?? false);
 
         self.sendResult(command: command);
     }

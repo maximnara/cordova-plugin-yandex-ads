@@ -1,7 +1,7 @@
 package io.luzh.cordova.plugin.helpers
 
 import com.yandex.mobile.ads.common.AdError
-import com.yandex.mobile.ads.common.AdRequestConfiguration
+import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import com.yandex.mobile.ads.rewarded.Reward
@@ -28,48 +28,48 @@ internal class RewardedAdsHelper(
 ) : BaseAdsHelper<RewardedAdLoader>(cordovaPlugin, cordovaWebView, blockId) {
     private var mRewardedAd: RewardedAd? = null
 
-    override fun getLoader() = RewardedAdLoader(cordova.context).apply {
-        setAdLoadListener(object : RewardedAdLoadListener {
-            override fun onAdLoaded(rewarded: RewardedAd) {
-                mRewardedAd = rewarded
-                rewarded.setAdEventListener(object : RewardedAdEventListener {
-                    override fun onRewarded(reward: Reward) {
-                        emitWindowEvent(EVENT_REWARDED_VIDEO_REWARDED)
-                    }
+    override fun getLoader() = RewardedAdLoader(cordova.context)
 
-                    override fun onAdShown() {
-                        emitWindowEvent(EVENT_REWARDED_VIDEO_SHOWN)
-                    }
+    private val adLoadListener = object : RewardedAdLoadListener {
+        override fun onAdLoaded(rewarded: RewardedAd) {
+            mRewardedAd = rewarded
+            rewarded.setAdEventListener(object : RewardedAdEventListener {
+                override fun onRewarded(reward: Reward) {
+                    emitWindowEvent(EVENT_REWARDED_VIDEO_REWARDED)
+                }
 
-                    override fun onAdFailedToShow(adError: AdError) {
-                        emitWindowEvent(EVENT_REWARDED_VIDEO_FAILED_TO_SHOW)
-                    }
+                override fun onAdShown() {
+                    emitWindowEvent(EVENT_REWARDED_VIDEO_SHOWN)
+                }
 
-                    override fun onAdDismissed() {
-                        emitWindowEvent(EVENT_REWARDED_VIDEO_AD_DISMISSED)
-                    }
+                override fun onAdFailedToShow(adError: AdError) {
+                    emitWindowEvent(EVENT_REWARDED_VIDEO_FAILED_TO_SHOW)
+                }
 
-                    override fun onAdClicked() {
-                        emitWindowEvent(EVENT_REWARDED_VIDEO_AD_CLICKED)
-                    }
+                override fun onAdDismissed() {
+                    emitWindowEvent(EVENT_REWARDED_VIDEO_AD_DISMISSED)
+                }
 
-                    override fun onAdImpression(impressionData: ImpressionData?) {
-                        emitWindowEvent(EVENT_REWARDED_VIDEO_AD_IMPRESSION)
-                    }
-                })
+                override fun onAdClicked() {
+                    emitWindowEvent(EVENT_REWARDED_VIDEO_AD_CLICKED)
+                }
 
-                emitWindowEvent(EVENT_REWARDED_VIDEO_LOADED)
-            }
+                override fun onAdImpression(impressionData: ImpressionData?) {
+                    emitWindowEvent(EVENT_REWARDED_VIDEO_AD_IMPRESSION)
+                }
+            })
 
-            override fun onAdFailedToLoad(error: AdRequestError) {
-                emitWindowEvent(EVENT_REWARDED_VIDEO_FAILED_TO_LOAD, error.description)
-            }
-        })
+            emitWindowEvent(EVENT_REWARDED_VIDEO_LOADED)
+        }
+
+        override fun onAdFailedToLoad(error: AdRequestError) {
+            emitWindowEvent(EVENT_REWARDED_VIDEO_FAILED_TO_LOAD, error.description)
+        }
     }
 
     override fun load(callbackContext: CallbackContext) {
         cordova.getActivity().runOnUiThread(Runnable {
-            getLoader().loadAd(AdRequestConfiguration.Builder(blockId).build())
+            getLoader().loadAd(AdRequest.Builder(blockId).build(), adLoadListener)
             callbackContext.success()
         })
     }

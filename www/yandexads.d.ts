@@ -36,7 +36,7 @@ export interface YandexAdsEvents {
         failedToLoad: 'bannerFailedToLoad';
         clicked: 'bannerDidClick';
         impression: 'bannerDidTrackImpressionWith';
-        leftApplication: 'bannerWillLeaveApplication';
+        // leftApplication removed: SDK 8 no longer emits bannerWillLeaveApplication.
     };
     feed: {
         loaded: 'feedDidLoad';

@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-yandex-ads",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "Yandex ads for cordova based development",
   "repository": {
     "type": "git",
@@ -21,25 +21,18 @@
       "ios"
     ]
   },
-  "engines": [
-    {
-      "name": "cordova",
-      "version": ">=6.5.0"
-    },
-    {
-      "cordovaDependencies": {
-        ">0.1.2": {
-          "cordova-plugin-add-swift-support": ">2.0.2"
-        }
-      }
-    }
-  ],
+  "engines": {
+    "node": ">=20.17.0 || >=22.9.0"
+  },
   "devDependencies": {
-    "cordova": "^11.0.0"
+    "cordova": "^13.0.0"
   },
   "bugs": {
     "url": "https://github.com/maximnara/cordova-plugin-yandex-ads/issues"
   },
   "homepage": "https://github.com/maximnara/cordova-plugin-yandex-ads",
-  "types": "./www/yandexads.d.ts"
+  "types": "./www/yandexads.d.ts",
+  "scripts": {
+    "test:install": "node tests/install-smoke.cjs"
+  }
 }
