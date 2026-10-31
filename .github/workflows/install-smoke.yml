@@ -57,10 +57,17 @@ jobs:
           gradle-version: '8.14.2'
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
-      - name: Prepare Android SDK
+      - name: Set up Android SDK
+        if: matrix.platform == 'android'
+        uses: android-actions/setup-android@v4.0.4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+
+      - name: Check Android toolchain
         if: matrix.platform == 'android'
         run: |
-          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          sdkmanager --version
           java -version
           gradle --version
 

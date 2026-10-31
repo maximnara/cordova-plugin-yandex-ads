@@ -297,5 +297,3 @@ await YandexAds.loadOpenAppAds();
 ### Участие в разработке
 
 Принимаются pull request с исправлениями, улучшением кода и новыми возможностями.
-
-[GitHub Actions](../../.github/workflows/install-smoke.yml) проверяет чистую установку и сборку Android/iOS в pull request, при push в `master`/`main` и при ручном запуске. Логи и результаты сборки сохраняются в артефактах. Локально: `npm install`, затем `npm run test:install -- android` или `npm run test:install -- ios` со стандартным окружением платформы.

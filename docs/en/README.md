@@ -297,5 +297,3 @@ The bundled list is a snapshot from November 1, 2026. Review the current [SKAdNe
 ### Contributing
 
 Pull requests for fixes, code improvements, and new features are welcome.
-
-[GitHub Actions](../../.github/workflows/install-smoke.yml) checks clean installation and builds Android/iOS on pull requests, pushes to `master`/`main`, and manual runs. Logs and build results are saved as artifacts. Local commands: `npm install`, then `npm run test:install -- android` or `npm run test:install -- ios` with the standard platform toolchain.

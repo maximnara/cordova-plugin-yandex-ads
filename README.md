@@ -39,5 +39,3 @@ See the [English documentation](docs/en/README.md) for platform requirements and
 Bug reports and pull requests are welcome. Please include the affected platform, Cordova version, and steps to reproduce when [opening an issue](https://github.com/maximnara/cordova-plugin-yandex-ads/issues).
 
 For code changes, describe the resulting behavior and how you tested it on the affected platforms.
-
-[GitHub Actions](.github/workflows/install-smoke.yml) checks clean installation and builds Android/iOS on pull requests, pushes to `master`/`main`, and manual runs. Logs and build results are saved as artifacts. To run locally, use `npm install` followed by `npm run test:install -- android` or `npm run test:install -- ios` with the standard platform toolchain.
