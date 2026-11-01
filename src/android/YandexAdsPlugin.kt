@@ -45,8 +45,10 @@ import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaWebView
 import org.json.JSONArray
 import org.json.JSONException
+import org.json.JSONObject
 
 class YandexAdsPlugin : CordovaPlugin() {
+    @Volatile private var sdkInitialized = false
     private var cordovaWebView: CordovaWebView? = null
 
     private var bannerAdsHelper: BannerAdsHelper? = null
@@ -62,6 +64,13 @@ class YandexAdsPlugin : CordovaPlugin() {
         args: JSONArray,
         callbackContext: CallbackContext
     ): Boolean {
+        if (!sdkInitialized && action in AD_ACTIONS) {
+            callbackContext.error(JSONObject()
+                .put("code", "plugin_not_initialized")
+                .put("message", "Plugin not initialized, call .init before ads load")
+                .put("data", JSONObject().put("methodName", action)))
+            return true
+        }
         return when (action) {
             // Global
             ACTION_RUN -> { initAction(args, callbackContext); true }
@@ -113,6 +122,7 @@ class YandexAdsPlugin : CordovaPlugin() {
     }
 
     override fun onDestroy() {
+        sdkInitialized = false
         instreamAdsHelper?.onDestroy()
     }
 
@@ -127,6 +137,7 @@ class YandexAdsPlugin : CordovaPlugin() {
      * Intilization action Initializes Yandex Ads
      */
     private fun initAction(args: JSONArray, callbackContext: CallbackContext) {
+        sdkInitialized = false
         val webView = cordovaWebView ?: return
         val rewardedBlockId: String = args.getString(KEY_BLOCK_ID_REWARDED)
         val interstitialBlockId: String = args.getString(KEY_BLOCK_ID_INTERSTITIAL)
@@ -159,7 +170,10 @@ class YandexAdsPlugin : CordovaPlugin() {
 
         initialize(
             cordova.activity,
-            InitializationListener { callbackContext.success() })
+            InitializationListener {
+                sdkInitialized = true
+                callbackContext.success()
+            })
     }
 
 
@@ -167,5 +181,16 @@ class YandexAdsPlugin : CordovaPlugin() {
         setUserConsent(value)
         Log.d(Constants.YANDEX_ADS_TAG, "setUserConsent: $value")
         callbackContext.success()
+    }
+
+    private companion object {
+        val AD_ACTIONS = setOf(
+            ACTION_LOAD_BANNER, ACTION_SHOW_BANNER, ACTION_HIDE_BANNER, ACTION_RELOAD_BANNER,
+            ACTION_LOAD_INTERSTITIAL, ACTION_SHOW_INTERSTITIAL,
+            ACTION_lOAD_REWARDED_VIDEO, ACTION_SHOW_REWARDED_VIDEO,
+            ACTION_LOAD_OPEN_APP_ADS, ACTION_SHOW_OPEN_APP_ADS,
+            ACTION_LOAD_FEED_APP_ADS, ACTION_SHOW_FEED_APP_ADS, ACTION_HIDE_FEED_APP_ADS,
+            ACTION_LOAD_INSTREAM_APP_ADS, ACTION_SHOW_INSTREAM_APP_ADS, ACTION_HIDE_INSTREAM_APP_ADS
+        )
     }
 }

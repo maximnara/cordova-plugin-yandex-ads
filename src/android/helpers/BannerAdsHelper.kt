@@ -6,6 +6,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import androidx.core.view.contains
 import com.yandex.mobile.ads.banner.BannerAdEventListener
@@ -33,6 +34,11 @@ internal class BannerAdsHelper(
     private var bannerLoaded: Boolean = false
     private var bannerShown: Boolean = false
     private var mBannerAdView: BannerAdView? = null
+    private var inlineRoot: LinearLayout? = null
+    private var inlineWebViewHost: FrameLayout? = null
+    private var originalWebViewParent: ViewGroup? = null
+    private var originalWebViewParams: ViewGroup.LayoutParams? = null
+    private var originalWebViewIndex = 0
 
     override fun getLoader() = null
 
@@ -75,26 +81,35 @@ internal class BannerAdsHelper(
                 val view = cordovaWebView.view
                 val wvParentView = view.parent as? ViewGroup
                 val parentView = LinearLayout(cordovaWebView.context)
+                inlineRoot = parentView
 
                 // if we have a parent of this element,
                 // we remove it from there and put it in the linerLayout
                 val rootView: ViewGroup? = if (wvParentView != null) {
+                    originalWebViewParent = wvParentView
+                    originalWebViewIndex = wvParentView.indexOfChild(view)
+                    originalWebViewParams = FrameLayout.LayoutParams(view.layoutParams as FrameLayout.LayoutParams)
                     wvParentView.removeView(view)
                     parentView.orientation = LinearLayout.VERTICAL
-                    parentView.layoutParams = LinearLayout.LayoutParams(
+                    parentView.layoutParams = FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT, 0.0f
+                        ViewGroup.LayoutParams.MATCH_PARENT
                     )
-                    view.layoutParams = LinearLayout.LayoutParams(
+                    // Cordova 15's root insets listener retains the WebView reference
+                    // and expects FrameLayout.LayoutParams even after it is reparented.
+                    val webViewHost = FrameLayout(cordovaWebView.context)
+                    inlineWebViewHost = webViewHost
+                    webViewHost.layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT, 1.0f
+                        0, 1.0f
                     )
-                    parentView.addView(view)
+                    webViewHost.addView(view, FrameLayout.LayoutParams(originalWebViewParams as FrameLayout.LayoutParams))
+                    parentView.addView(webViewHost)
                     wvParentView
                 } else {
                     view as? ViewGroup
                 }
-                rootView?.addView(parentView)
+                rootView?.addView(parentView, originalWebViewIndex)
 
                 bannerContainerLayout = RelativeLayout(cordovaPlugin.cordova.activity)
 
@@ -318,12 +333,22 @@ internal class BannerAdsHelper(
 
     private fun hideBannerView() {
         cordova.getActivity().runOnUiThread(Runnable {
-            val parentLayout = getParentLayout()
-
-            bannerContainerLayout?.let { it.removeView(mBannerAdView) }
-            parentLayout?.let { it.removeView(bannerContainerLayout) }
-
             destroyBanner()
+            bannerParrentLayout?.let { (it.parent as? ViewGroup)?.removeView(it) }
+            inlineRoot?.let { root ->
+                val view = cordovaWebView.view
+                inlineWebViewHost?.removeView(view)
+                (root.parent as? ViewGroup)?.removeView(root)
+                originalWebViewParent?.addView(view, originalWebViewIndex, originalWebViewParams)
+            }
+            bannerParrentLayout = null
+            bannerContainerLayout = null
+            inlineRoot = null
+            inlineWebViewHost = null
+            originalWebViewParent = null
+            originalWebViewParams = null
+            bannerLoaded = false
+            bannerShown = false
         })
     }
 
@@ -333,6 +358,7 @@ internal class BannerAdsHelper(
     private fun destroyBanner() {
         mBannerAdView?.let {
             try {
+                (it.parent as? ViewGroup)?.removeView(it)
                 it.destroy()
             } catch (e: Exception) {
                 log("Exception while destroying banner, seems too many requests")

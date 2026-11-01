@@ -1,0 +1,10 @@
+{
+  "name": "yandex-ads-device-integration",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "^22.19.0 || >=24.0.0" },
+  "devDependencies": {
+    "appium": "3.9.0",
+    "webdriverio": "10.1.0"
+  }
+}

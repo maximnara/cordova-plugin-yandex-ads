@@ -15,10 +15,13 @@ All notable changes to this project will be documented in this file.
 * Migrate iOS requests, completion-based loading, banner and fullscreen delegates, and main actor isolation; initialize the SDK before resolving `init()`.
 * Keep existing JavaScript methods and the remaining event names.
 * Enable Kotlin inside the plugin Gradle extension, using Cordova’s Kotlin and build tool versions. Fresh projects need no application build preferences.
-* Add a clean installation regression test: create an empty Cordova app, install the npm archive, and build with an unchanged config.xml.
 
 ### Fixed
 
+* Reject Android ad commands before SDK initialization with a structured error instead of leaving their callbacks pending.
+* Preserve Cordova 15 WebView layout parameters for inline Android banners, and restore its original parent when hiding the banner.
+* Include SDK failure descriptions in Android event payloads as JSON objects, alongside native logs.
+* Reset iOS banner reload state when hiding a banner or starting a normal load, so subsequent loads emit their completion event.
 * Add the SKAdNetwork list recommended by Yandex to the iOS app automatically, including the identifier required for ad loading in a fresh Cordova project.
 * Remove an unused Android manifest edit that caused Cordova to fail when reinstalling the plugin.
 * Emit the iOS AppOpen failure event on a failed load and serialize error event payloads as JSON objects.

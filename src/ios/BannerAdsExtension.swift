@@ -35,6 +35,7 @@ extension YandexAdsPlugin {
             return;
         }
 
+        self.bannerReloaded = false
         self.getBannerAdView().loadAd(with: AdRequest(adUnitID: self.bannerBlockId!))
 
         self.sendResult(command: command);
@@ -165,6 +166,7 @@ extension YandexAdsPlugin {
         self.getBannerAdView().delegate = nil
         self.bannerAdViewCache = nil
 
+        self.bannerReloaded = false
         self.sendResult(command: command);
     }
 }

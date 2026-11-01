@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-yandex-ads",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Yandex ads for cordova based development",
   "repository": {
     "type": "git",
@@ -33,6 +33,8 @@
   "homepage": "https://github.com/maximnara/cordova-plugin-yandex-ads",
   "types": "./www/yandexads.d.ts",
   "scripts": {
-    "test:install": "node tests/install-smoke.cjs"
+    "test:install": "node tests/install-smoke.cjs",
+    "test:integration:setup": "node tests/integration/setup.mjs",
+    "test:integration": "node tests/integration/run.mjs"
   }
 }

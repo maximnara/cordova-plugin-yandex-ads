@@ -5,6 +5,7 @@ import io.luzh.cordova.plugin.utils.Constants
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaWebView
+import org.json.JSONObject
 
 internal abstract class BaseAdsHelper<T>(
     protected val cordovaPlugin: CordovaPlugin,
@@ -19,10 +20,13 @@ internal abstract class BaseAdsHelper<T>(
 
     fun emitWindowEvent(event: String, logEventDescription: String? = null) {
         log(event, logEventDescription)
+        val payload = logEventDescription?.let {
+            ", " + JSONObject().put("message", it).toString()
+        } ?: ""
 
         cordovaPlugin.cordova.getActivity().runOnUiThread(Runnable {
             cordovaWebView.loadUrl(
-                String.format(FIRE_WINDOW_EVENT, event)
+                "javascript:cordova.fireWindowEvent(${JSONObject.quote(event)}$payload);"
             )
         })
     }
@@ -33,7 +37,4 @@ internal abstract class BaseAdsHelper<T>(
         Log.d(Constants.YANDEX_ADS_TAG, logEvent)
     }
 
-    companion object {
-        private const val FIRE_WINDOW_EVENT = "javascript:cordova.fireWindowEvent('%s');"
-    }
 }
