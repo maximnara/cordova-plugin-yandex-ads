@@ -131,8 +131,11 @@ try {
         await pause(500);
     }
     assert(ready, 'Appium did not become ready; see appium.log');
+    console.log(`Starting Appium ${platform} session; startup logs: ${path.join(output, 'appium.log')}`);
     driver = await remote({
-        hostname: '127.0.0.1', port, logLevel: 'error', connectionRetryCount: 0, connectionRetryTimeout: 240000,
+        hostname: '127.0.0.1', port, logLevel: 'error', connectionRetryCount: 0,
+        // A cold iOS session installs the app and builds/starts WDA before returning.
+        connectionRetryTimeout: platform === 'ios' ? 600000 : 240000,
         capabilities: {
             platformName: platform === 'android' ? 'Android' : 'iOS',
             'appium:automationName': platform === 'android' ? 'UiAutomator2' : 'XCUITest',
@@ -140,7 +143,13 @@ try {
             'appium:app': artifact,
             'appium:enforceAppInstall': true,
             'appium:newCommandTimeout': 240,
-            ...(platform === 'android' ? { 'appium:autoGrantPermissions': true } : { 'appium:showXcodeLog': true, 'appium:wdaLaunchTimeout': 180000 })
+            ...(platform === 'android' ? { 'appium:autoGrantPermissions': true } : {
+                // The simulator is already booted by deviceId(); CI needs no UI restart.
+                'appium:isHeadless': process.env.CI === 'true',
+                'appium:showXcodeLog': true,
+                'appium:wdaLaunchTimeout': 300000,
+                'appium:wdaStartupRetries': 1
+            })
         }
     });
     for (const test of selected) {
@@ -168,6 +177,10 @@ try {
 } catch (error) {
     fatal = error;
     console.error(error);
+    if (!driver && server) {
+        const tail = fs.readFileSync(path.join(output, 'appium.log'), 'utf8').trim().split('\n').slice(-25);
+        console.error(`Appium startup log (last 25 lines):\n${tail.map(line => line.slice(0, 500)).join('\n')}`);
+    }
 } finally {
     try { await driver?.deleteSession(); } catch (error) { console.error(`Session cleanup: ${error}`); }
     if (server) {
