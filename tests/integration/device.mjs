@@ -57,7 +57,8 @@ export class Device {
         await this.driver.activateApp(this.appId);
         this.context = null;
         await this.web();
-        await this.driver.setTimeout({ script: 15000 });
+        // Allow the native init callback deadline to expire before WebDriver's script deadline.
+        await this.driver.setTimeout({ script: 95000 });
         await this.driver.execute(name => {
             window.integrationFixture.testName = name;
             document.getElementById('status').textContent = name.startsWith('invalid-id-')
@@ -72,17 +73,19 @@ export class Device {
 
     async call(method, ...args) {
         await this.web();
-        const envelope = await this.driver.execute(async (method, args) => {
+        // First SDK initialization on a cold simulator may take longer than bridge commands.
+        const callbackTimeout = method === 'init' ? 90000 : 10000;
+        const envelope = await this.driver.execute(async (method, args, timeout) => {
             let timer;
             try {
                 const response = await Promise.race([
                     window.integrationFixture.call(method, args),
-                    new Promise(resolve => { timer = setTimeout(() => resolve({ ok: false, error: { code: 'callback_timeout', message: `${method}: no native callback in 10s` } }), 10000); })
+                    new Promise(resolve => { timer = setTimeout(() => resolve({ ok: false, error: { code: 'callback_timeout', message: `${method}: no native callback in ${timeout / 1000}s` } }), timeout); })
                 ]);
                 // WebDriver reserves a top-level `error` field for protocol failures.
                 return { response };
             } finally { clearTimeout(timer); }
-        }, method, args);
+        }, method, args, callbackTimeout);
         return envelope.response;
     }
 
